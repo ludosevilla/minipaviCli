@@ -1,0 +1,41 @@
+****************************************************
+****           MINIPAVI Client 1.0              ****
+****               Novembre 2023                ****
+****            Jean-arthur Silve               ****
+****     Infos : http://www.minipavi.fr         ****
+****                                            ****
+****    L'ensemble des fichiers peuvent être    ****
+****         modifiés, distribués etc !         ****
+****************************************************
+
+
+Contenu de l'archive:
+
+France24
+    |____________FRANCE24.VDT: Page videotex d'accueil du service
+	             france24Functions.php: Fonctions utilisée dans le script du service
+			     index.php: script du service
+MiniChat
+    |____________index.php: script du service
+	             MiniChat.vdt: Page videotex du service
+	             miniChatFunctions: script du service
+MiniPaviCli.php__Classe pour communiquer avec la psserelle MiniPavi
+README.txt_______Ce fichier
+
+Pré-requis:
+    Serveur Web + PHP (les scripts ont été testés avec PHP8.2 et 7.3)
+
+Installation rapide d'un service
+- Copier dans un repertoire accessible les fichiers d'un service +  MiniPaviCli.php
+- Modifier le fichier index.php pour que le chemin vers MiniPaviCli.php soit correct
+
+Voilà, terminé.
+
+Si le dossier de votre installation est acessible par exemple via l'url:
+http://www.monsite.fr/test/
+
+alors, le service installé est accessible par websocket à l'url:
+ws://go.minipavi.fr:8182/url=http://www.monsite.fr/test/
+
+Vous pouvez utiliser, par exemple, l'emulateur Minitel (de MiEdit) disponible sur www.minipavi.fr pour y accéder
+
