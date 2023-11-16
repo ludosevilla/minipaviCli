@@ -121,7 +121,7 @@ class MiniPaviCli {
 	static function send($content,$next,$context='',$echo=true,$cmd=null,$directCall=false) {
 		$rep['version']=VERSION;
 		$rep['content']=@base64_encode($content);
-		$rep['context']=mb_substr($context,0,65000);
+		$rep['context']=mb_convert_encoding(mb_substr($context,0,65000),'UTF-8');
 		if ($echo)	$rep['echo']='on';
 		else $rep['echo']='off';
 		if ($directCall)	$rep['directcall']='yes';
