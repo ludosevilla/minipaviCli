@@ -22,6 +22,9 @@ const MINICHAT_PATH_CNXLIST = 'connected.list';	// Fichier de la liste des conne
 //error_reporting(E_USER_NOTICE|E_USER_WARNING);
 error_reporting(E_ERROR);
 ini_set('display_errors',0);
+
+
+
 try {
 	
 	
@@ -41,7 +44,7 @@ try {
 
 	
 	if (MiniPavi\MiniPaviCli::$fctn == 'FIN' || MiniPavi\MiniPaviCli::$fctn == 'FCTN?') {
-			// Deconnexion
+			// Deconnexion (attention, bug peut être appellé plusieurs fois de suite..)
 			trigger_error("[MiniChat] DECO");
 			removeConnected(MiniPavi\MiniPaviCli::$uniqueId);
 			exit;
@@ -372,13 +375,13 @@ try {
 						// Le message n'est pas vide
 						setMsg(@MiniPavi\MiniPaviCli::$uniqueId,$tMsg[0]['idexp'],$context['pseudo'],@MiniPavi\MiniPaviCli::$content,$tMsg[0]['content']);
 						// On prévient le destinataire						
-						$cmd = MiniPavi\MiniPaviCli::createPushServiceMsgCmd(array(MiniPavi\MiniPaviCli::toG2('Vous avez reçu un message!')),array($tMsg[0]['idexp']));
+						$cmd = MiniPavi\MiniPaviCli::createPushServiceMsgCmd(array('Vous avez recu un message!'),array($tMsg[0]['idexp']));
 					}
 				} else {
 					// Envoi d'un nouveau message
 					setMsg(@MiniPavi\MiniPaviCli::$uniqueId,$context['sendiddest'],$context['pseudo'],@MiniPavi\MiniPaviCli::$content);					
 					// On prévient le destinataire
-					$cmd = MiniPavi\MiniPaviCli::createPushServiceMsgCmd(array(MiniPavi\MiniPaviCli::toG2('Vous avez reçu un message!')),array($context['sendiddest']));
+					$cmd = MiniPavi\MiniPaviCli::createPushServiceMsgCmd(array('Vous avez recu un message!'),array($context['sendiddest']));
 				}
 				
 				
