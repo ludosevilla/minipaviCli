@@ -215,11 +215,11 @@ try {
 				$tMsg = getMsgFor(@MiniPavi\MiniPaviCli::$uniqueId);
 				$numMsg = count($tMsg);
 				if ($numMsg<1) {
-					$vdt.=MiniPavi\MiniPaviCli::setPos(1,21).VDT_TXTRED.VDT_BGBLUE.' Aucun message en attente'.VDT_CLRLN;
+					$vdt.=MiniPavi\MiniPaviCli::setPos(1,21).VDT_TXTCYAN.VDT_BGBLUE.' Aucun message en attente'.VDT_CLRLN;
 				} else {
 					if ($numMsg == 1)
 						$s=''; else $s='s';
-					$vdt.=MiniPavi\MiniPaviCli::setPos(1,21).VDT_TXTRED.VDT_BGBLUE." $numMsg message$s en attente".VDT_CLRLN;
+					$vdt.=MiniPavi\MiniPaviCli::setPos(1,21).VDT_TXTCYAN.VDT_BGBLUE." $numMsg message$s en attente".VDT_CLRLN;
 				}
 				
 				$cmd=MiniPavi\MiniPaviCli::createInputTxtCmd(17,22,2,MSK_ENVOI|MSK_SUITE|MSK_RETOUR|MSK_REPETITION|MSK_SOMMAIRE,true,'.','','');
