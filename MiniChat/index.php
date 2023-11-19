@@ -23,12 +23,71 @@ const MINICHAT_PATH_CNXLIST = 'connected.list';	// Fichier de la liste des conne
 error_reporting(E_ERROR);
 ini_set('display_errors',0);
 
+/****************************************************
+Guide (très)Rapide pour Développer son service Minitel
+Structure générale d'un service
 
+Généralement, votre service Minitel s'articule autour d'un ensemble de pages videotex
+qui s'afficheront et à partir desquelles l'utilisateur devra effectuer une saisie.
+
+Selon cette saisie, une action sera effectuée, et une nouvelle page sera affichée.
+
+Le service (Minitel) s'articule autour d'un script qui contient
+une structure switch/case, le tout dans une boucle while infinie.
+
+Chaque page du service regroupe un ensemble de "case" qui
+correspondent à:
+
+- Affichage de la partie fixe de la page:
+	Exemple: Affichage du titre "Liste des connectés" et de la liste vide.
+	
+- Affichage de l'éventuelle partie variable de l'affichage:
+	Exemple: Effacement de l'éventuelle précédente liste de connectés et réaffichage de cette liste
+	
+- Initialisation de la commande de saisie:
+	Exemple Déterminer si l'utilisateur doit saisir un choix, un message multilignes..
+	
+- Traitement de la saisie utilisateur
+	Test de la touche de fonction pressée (Envoi, Suite, etc.) et traitement.
+
+Chaque "case" se termine par un "break" ou "break 2":
+	- "break": le script va continuer en executant la case correspondant à la valeur de la variable $step
+	- "break 2": le script s'arrête. Typiquement après l'initialisation de la commande de saisie (on attend en effet l'action utilisateur)
+
+Lors de l'appel du script par la passerelle MiniPavi, la première instruction doit être
+MiniPaviCli::start(), laquelle va initialiser la classe MiniPavi qui représente l'utilisateur et 
+donne accès à plusieurs variables:
+
+$step : l'étape de l'execution du script
+$content : tableau de la saisie utilisateur
+$fctn : la touche de fonction utilisée
+$context: une zone à disposition du service qui est rappellé à chaque appel du script 
+et que le script peut faire varier
+$uniqueId: Identifiant unique de la connexion au niveau de la passerelle
+$remoteAddr: ip de l'utilisateur
+$urlParams: paramètres indiqués dans l'url du script
+
+A la fin du traitement, le script doit appeller MiniPaviCli::send en indiquant notamment les paramètres représentant 
+la prochaine url à appeller, le contexte utilisateur, la saisie attendue et la page videotex à afficher.
+
+Si votre service n'est que sur un seul script (comme celui-ci par exemple), alors l'url sera toujours la même, et seul un paramètre "step"
+indiquera quelle partie du script doit être executé.
+
+Un service peut bien sûr être développé sur plusieurs scripts différents, et pas tout dans un seul énorme fichier PHP (pas pratique si le service est complexe).
+
+
+L'accès à l'émulateur Minitel connecté à MiniPavi est dispo sur http://www.minipavi.fr/emulminitel/
+Pour tester ce script, saisissez le code "MINICHAT"
+
+Pour tester vos scripts avec l'émulateur, allez sur:
+http://www.minipavi.fr/emulminitel/?url=[url de votre script]
+Exemple : http://www.minipavi.fr/emulminitel/index.php?url=http://www.monsite.com/monscript.php
+
+Enjoy!
+
+*****************************************************/
 
 try {
-	
-	
-	
 	
 	MiniPavi\MiniPaviCli::start();
 
@@ -438,6 +497,7 @@ try {
 
 	$nextPage=$prot."://".$_SERVER['HTTP_HOST']."".$_SERVER['PHP_SELF'].'?step='.$step;
 
+	// On envoi tout cela à la passerelle
 	MiniPavi\MiniPaviCli::send($vdt,$nextPage,serialize($context),true,$cmd,$directCall);
 	
 } catch (Exception $e) {
