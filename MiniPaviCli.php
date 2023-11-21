@@ -77,7 +77,7 @@ class MiniPaviCli {
 	static public $uniqueId='';		// Identifiant unique de la connexion
 	static public $remoteAddr='';	// IP de l'utilisateur
 	static public $content=array();	// Contenu saisi
-	static public $fctn='';			// Touche de fonction utilisée (ou CNX ou DECO)
+	static public $fctn='';			// Touche de fonction utilisée (ou CNX ou FIN)
 	static public $urlParams='';	// Paramètres fournis lors de l'appel à l'url du service
 	static public $context='';		// 65000 caractres libres d'utilisation et rappellés à chaque accès.
 	static public $typeSocket;		// Type de connexion ('websocket' ou 'other')
@@ -95,8 +95,6 @@ class MiniPaviCli {
 		try {
 			$requestData = json_decode($rawPostData,false,5,JSON_THROW_ON_ERROR);
 				
-			if (@$requestData->PAVI->version != VERSION)
-				throw new Exception('Version incorrecte');
 			self::$uniqueId = @$requestData->PAVI->uniqueId;
 			self::$remoteAddr = @$requestData->PAVI->remoteAddr;
 			self::$typeSocket = @$requestData->PAVI->typesocket;
