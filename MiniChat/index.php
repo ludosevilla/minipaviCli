@@ -19,9 +19,12 @@ const MINICHAT_TIMEOUT = 900;	// Temps maximum sans action avant d'être supprim
 // Attention à autoriser le script en lecture/écriture (et création) sur ces fichiers !!
 const MINICHAT_PATH_MSGLIST = 'messages.list';	// Fichier de la liste des message
 const MINICHAT_PATH_CNXLIST = 'connected.list';	// Fichier de la liste des connectés
+
+
 //error_reporting(E_USER_NOTICE|E_USER_WARNING);
 error_reporting(E_ERROR);
 ini_set('display_errors',0);
+
 
 /****************************************************
 Guide (très)Rapide pour Développer son service Minitel
@@ -65,6 +68,7 @@ $context: une zone à disposition du service qui est rappellé à chaque appel d
 et que le script peut faire varier
 $uniqueId: Identifiant unique de la connexion au niveau de la passerelle
 $remoteAddr: ip de l'utilisateur
+$typesocket: le type de connexion, 'websocket' (connexion via websocket) ou 'other' (connexion RTC)
 $urlParams: paramètres indiqués dans l'url du script
 
 A la fin du traitement, le script doit appeller MiniPaviCli::send en indiquant notamment les paramètres représentant 
@@ -147,6 +151,9 @@ try {
 				break;		// On continue le script
 			case 1:
 				// Accueil: initialisation de la zone de saisie du pseudo
+				// Zone en colonne 13, ligne 18, longueur 10, accepte les touche Envoi et Suite, affiche le curseur,
+				// '.' est le caractère de remplissage, pas de caractère 'alternatif' (pour cacher la saisie, style mot de passe)
+				// pré-remplissage par la valeur du pseudo
 				$cmd=MiniPavi\MiniPaviCli::createInputTxtCmd(13,18,10,MSK_ENVOI|MSK_SUITE,true,'.','',@$context['pseudo']);
 				setStep(10);
 				$directCall=false;
@@ -404,6 +411,9 @@ try {
 				break;
 			case 52:
 				// Lecture-écriture des messages : création de la zone de saisie
+				// Zone en colonne 1, ligne 16, longueur 40, heuteur (lignes) 6, accepte les touche Envoi et Suite, affiche le curseur,
+				// ' ' est le caractère de remplissage
+				
 				$cmd=MiniPavi\MiniPaviCli::createInputMsgCmd(1,16,40,6,MSK_ENVOI|MSK_SOMMAIRE,true,' ');
 				setStep(53);
 				$directCall=false;
