@@ -163,7 +163,7 @@ class MiniPaviCli {
 		
 		if (isset($preFill) && mb_strlen($preFill)>$length)
 			$preFill = mb_substr($preFill,0,$length);
-		else $preFill='';
+		else if (!isset($preFill)) $preFill='';
 		
 		$cmd=array();
 		$cmd['COMMAND']['name']='InputTxt';
@@ -305,6 +305,15 @@ class MiniPaviCli {
 		return $char.VDT_REP.chr(63+$num);
 	}
 	
+	/*************************************************
+	// Ecrit un texte centré, précédé des attributs $attr
+	**************************************************/	
+	
+	static function writeCentered($line,$text,$attr='') {
+		$vdt = self::setPos((40-mb_strlen($text))/2,$line);
+		$vdt.= $attr.self::toG2($text);
+		return $vdt;
+	}
 
 	/*************************************************
 	// Conversion de caractères spéciaux
