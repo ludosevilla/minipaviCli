@@ -310,7 +310,7 @@ class MiniPaviCli {
 	**************************************************/	
 	
 	static function writeCentered($line,$text,$attr='') {
-		$vdt = self::setPos((40-mb_strlen($text))/2,$line);
+		$vdt = self::setPos(ceil((40-mb_strlen($text)))/2,$line);
 		$vdt.= $attr.self::toG2($text);
 		return $vdt;
 	}
