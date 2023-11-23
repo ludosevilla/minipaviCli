@@ -9,7 +9,7 @@
 ****************************************************  
 
 
-# Contenu de l'archive:
+# Contenu
 
 - MiniPaviCli.php: Classe pour communiquer avec la psserelle MiniPavi  
 - README.md: Ce fichier  
@@ -24,7 +24,16 @@
   - MiniChat.vdt: Page videotex du service  
   - miniChatFunctions: script du service  
 
-
+- **MiniSncf**  
+  - index.php: script du service  
+  - MiniAPISncf.php: classe "light" pour communiquer avec l'API SNCF
+  - sncf2.vdt: logo SNCF videotex
+  - train.vdt: train videotex
+  
+  Remarque: vous devez indiquer une clé pour l'API Sncf dans le fichier MiniAPISncf.php  
+  Disponible sur https://numerique.sncf.com/startup/api/
+  
+  
 # Pré-requis
 
 Serveur Web + PHP (les scripts ont été testés avec PHP8.2 et 7.3)
