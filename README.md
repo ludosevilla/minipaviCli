@@ -12,7 +12,7 @@
 
 MiniPavi est une passerelle pour concevoir des services Minitel sur une architecture classique Web+PHP.
 
-MiniPaviCli.php est la classe pour s'inbterfacer avec la passerelle.
+MiniPaviCli.php est la classe pour s'interfacer avec la passerelle.
 
 Les scripts de mini-services MiniChat, France24 et SNCF sont fournis à titrre d'exemple.
 
