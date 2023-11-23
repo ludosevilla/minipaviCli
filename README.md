@@ -1,15 +1,15 @@
-****************************************************
-****           MINIPAVI Client 1.0              ****
-****               Novembre 2023                ****
-****            Jean-arthur Silve               ****
-****     Infos : http://www.minipavi.fr         ****
-****                                            ****
-****    L'ensemble des fichiers peuvent être    ****
-****         modifiés, distribués etc !         ****
-****************************************************
+****************************************************  
+****           MINIPAVI Client 1.0              ****  
+****               Novembre 2023                ****  
+****            Jean-arthur Silve               ****  
+****     Infos : http://www.minipavi.fr         ****  
+****                                            ****  
+****    L'ensemble des fichiers peuvent être    ****  
+****         modifiés, distribués etc !         ****  
+****************************************************  
 
 
-Contenu de l'archive:
+# Contenu de l'archive:
 
 France24
     |____________FRANCE24.VDT: Page videotex d'accueil du service
@@ -22,10 +22,10 @@ MiniChat
 MiniPaviCli.php__Classe pour communiquer avec la psserelle MiniPavi
 README.txt_______Ce fichier
 
-Pré-requis:
+# Pré-requis:
     Serveur Web + PHP (les scripts ont été testés avec PHP8.2 et 7.3)
 
-Installation rapide d'un service
+# Installation rapide d'un service
 - Copier dans un repertoire accessible les fichiers d'un service +  MiniPaviCli.php
 - Modifier le fichier index.php pour que le chemin vers MiniPaviCli.php soit correct
 
