@@ -11,16 +11,19 @@
 
 # Contenu de l'archive:
 
-France24  
-    |____________FRANCE24.VDT: Page videotex d'accueil du service  
-	             france24Functions.php: Fonctions utilisée dans le script du service  
-			     index.php: script du service  
-MiniChat  
-    |____________index.php: script du service  
-	             MiniChat.vdt: Page videotex du service  
-	             miniChatFunctions: script du service  
-MiniPaviCli.php__Classe pour communiquer avec la psserelle MiniPavi  
-README.txt_______Ce fichier  
+- MiniPaviCli.php: Classe pour communiquer avec la psserelle MiniPavi  
+- README.md: Ce fichier  
+
+- **France24**  
+  - FRANCE24.VDT: Page videotex d'accueil du service  
+  - france24Functions.php: Fonctions utilisée dans le script du service  
+  - index.php: script du service  
+
+- **MiniChat**  
+  - index.php: script du service  
+  - MiniChat.vdt: Page videotex du service  
+  - miniChatFunctions: script du service  
+
 
 # Pré-requis
     Serveur Web + PHP (les scripts ont été testés avec PHP8.2 et 7.3)
