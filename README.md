@@ -26,7 +26,8 @@
 
 
 # Pré-requis
-    Serveur Web + PHP (les scripts ont été testés avec PHP8.2 et 7.3)
+
+Serveur Web + PHP (les scripts ont été testés avec PHP8.2 et 7.3)
 
 # Installation rapide d'un service
 - Copier dans un repertoire accessible les fichiers d'un service +  MiniPaviCli.php
