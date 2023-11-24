@@ -98,14 +98,14 @@ try {
 				$vdt=MiniPavi\MiniPaviCli::writeLine0('Recherche en cours...');
 				$step=7;
 				$directCall=true;
-				break 2;	// Envoi du message d'attente (et donc arrêt du script) et on passe directement à l'étape 7 par un appel direct au script à l'étape 7
+				break 2;	// Envoi du message d'attente (et donc arrêt du script) et on passe directement à l'étape 7 par un appel direct au script (sans attente d'entrée utilisateur)
 				
 				
 			case 7:
 				// Recherche des gares disponibles
 				$tGares = MiniAPISncf::GetGares($context['gare']);
 				if (count($tGares)<1) {
-					$vdt=MiniPavi\MiniPaviCli::writeLine0('Aucune gare trouvé avec ces lettres...');
+					$vdt=MiniPavi\MiniPaviCli::writeLine0('Aucune gare trouvée. Réessayez!');
 					$step=2;
 					break;
 				}
@@ -227,6 +227,11 @@ try {
 				$context['vue'] = 'departs';		// Initialisation de la vue (departs ou arrivees)
 				$context['idxgare'] = $choix-1;
 
+				$vdt=MiniPavi\MiniPaviCli::writeLine0('Recherche en cours...');
+				$step=16;
+				$directCall=true;
+				break 2;	// Envoi du message d'attente (et donc arrêt du script) et on passe directement à l'étape 16 par un appel direct au script (sans attente d'entrée utilisateur)
+
 
 			case 16:
 				// Affichage de la liste des départs ou arrivées
@@ -305,8 +310,12 @@ try {
 					if ($context['vue'] == 'departs')
 						$context['vue'] = 'arrivees';
 					else $context['vue'] = 'departs';
-					$step = 16;
-					break;
+					
+					$vdt=MiniPavi\MiniPaviCli::writeLine0('Recherche en cours...');
+					$step=16;
+					$directCall=true;
+					break 2;	// Envoi du message d'attente (et donc arrêt du script) et on passe directement à l'étape 16 par un appel direct au script (sans attente d'entrée utilisateur)
+					
 				}
 				// Touche de fonction inopérante, on ne fait rien
 				break 2;
