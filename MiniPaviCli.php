@@ -11,54 +11,52 @@
 namespace MiniPavi;
  
 const VERSION = '1.0';
+define('VDT_LEFT', chr(0x08));
+define('VDT_RIGHT', chr(0x09));
+define('VDT_DOWN', chr(0x0A));
+define('VDT_UP', chr(0x0B));
+define('VDT_CR', chr(0x0D));
+define('VDT_CRLF', chr(0x0D).chr(0x0A));
+define('VDT_CLR', chr(0x0C));
+define('VDT_G0', chr(0x0F));
+define('VDT_G1', chr(0x0E));
+define('VDT_G2', chr(0x19));
+define('VDT_POS', chr(0x1F));
+define('VDT_REP', chr(0x12));
+define('VDT_CURON', chr(0x11));
+define('VDT_CUROFF', chr(0x14));
+define('VDT_CLRLN', chr(0x18));
+define('VDT_SZNORM', chr(0x1B).chr(0x4C));
+define('VDT_SZDBLH', chr(0x1B).chr(0x4D));
+define('VDT_SZDBLW', chr(0x1B).chr(0x4E));
+define('VDT_SZDBLHW', chr(0x1B).chr(0x4F));
+define('VDT_TXTBLACK', chr(0x1B).'@');
+define('VDT_TXTRED', chr(0x1B).'A');
+define('VDT_TXTGREEN', chr(0x1B).'B');
+define('VDT_TXTYELLOW', chr(0x1B).'C');
+define('VDT_TXTBLUE', chr(0x1B).'D');
+define('VDT_TXTMAGENTA', chr(0x1B).'E');
+define('VDT_TXTCYAN', chr(0x1B).'F');
+define('VDT_TXTWHITE', chr(0x1B).'G');
+define('VDT_BGBLACK', chr(0x1B).'P');
+define('VDT_BGRED', chr(0x1B).'Q');
+define('VDT_BGGREEN', chr(0x1B).'R');
+define('VDT_BGYELLOW', chr(0x1B).'S');
+define('VDT_BGBLUE', chr(0x1B).'T');
+define('VDT_BGMAGENTA', chr(0x1B).'U');
+define('VDT_BGCYAN', chr(0x1B).'V');
+define('VDT_BGWHITE', chr(0x1B).'W');
+define('VDT_BLINK', chr(0x1B).'H');
+define('VDT_FIXED', chr(0x1B).'I');
+define('VDT_STOPUNDERLINE', chr(0x1B).'Y');
+define('VDT_STARTUNDERLINE', chr(0x1B).'Z');
+define('VDT_FDNORM', chr(0x1B).'\\');
+define('VDT_FDINV', chr(0x1B).']');
 
-define('VDT_LEFT', chr(hexdec('08')));
-define('VDT_RIGHT', chr(hexdec('09')));
-define('VDT_DOWN', chr(hexdec('0A')));
-define('VDT_UP', chr(hexdec('0B')));
-define('VDT_CR', chr(hexdec('0D')));
-define('VDT_CRLF', chr(hexdec('0D')).chr(hexdec('0A')));
-define('VDT_CLR', chr(hexdec('0C')));
-define('VDT_G0', chr(hexdec('0F')));
-define('VDT_G1', chr(hexdec('0E')));
-define('VDT_G2', chr(hexdec('19')));
-define('VDT_POS', chr(hexdec('1F')));
-define('VDT_REP', chr(hexdec('12')));
-define('VDT_CURON', chr(hexdec('11')));
-define('VDT_CUROFF', chr(hexdec('14')));
-define('VDT_CLRLN', chr(hexdec('18')));
-define('VDT_SZNORM', chr(hexdec('1B')).chr(hexdec('4C')));
-define('VDT_SZDBLH', chr(hexdec('1B')).chr(hexdec('4D')));
-define('VDT_SZDBLW', chr(hexdec('1B')).chr(hexdec('4E')));
-define('VDT_SZDBLHW', chr(hexdec('1B')).chr(hexdec('4F')));
-define('VDT_TXTBLACK', chr(hexdec('1B')).'@');
-define('VDT_TXTRED', chr(hexdec('1B')).'A');
-define('VDT_TXTGREEN', chr(hexdec('1B')).'B');
-define('VDT_TXTYELLOW', chr(hexdec('1B')).'C');
-define('VDT_TXTBLUE', chr(hexdec('1B')).'D');
-define('VDT_TXTMAGENTA', chr(hexdec('1B')).'E');
-define('VDT_TXTCYAN', chr(hexdec('1B')).'F');
-define('VDT_TXTWHITE', chr(hexdec('1B')).'G');
-define('VDT_BGBLACK', chr(hexdec('1B')).'P');
-define('VDT_BGRED', chr(hexdec('1B')).'Q');
-define('VDT_BGGREEN', chr(hexdec('1B')).'R');
-define('VDT_BGYELLOW', chr(hexdec('1B')).'S');
-define('VDT_BGBLUE', chr(hexdec('1B')).'T');
-define('VDT_BGMAGENTA', chr(hexdec('1B')).'U');
-define('VDT_BGCYAN', chr(hexdec('1B')).'V');
-define('VDT_BGWHITE', chr(hexdec('1B')).'W');
-define('VDT_BLINK', chr(hexdec('1B')).'H');
-define('VDT_FIXED', chr(hexdec('1B')).'I');
-define('VDT_STOPUNDERLINE', chr(hexdec('1B')).'Y');
-define('VDT_STARTUNDERLINE', chr(hexdec('1B')).'Z');
-define('VDT_FDNORM', chr(hexdec('1B')).'\\');
-define('VDT_FDINV', chr(hexdec('1B')).']');
-
-
-define('PRO_MIN',chr(hexdec('1B')).chr(hexdec('3A')).chr(hexdec('69')).chr(hexdec('45')));
-define('PRO_MAJ',chr(hexdec('1B')).chr(hexdec('3A')).chr(hexdec('6A')).chr(hexdec('45')));
-define('PRO_LOCALECHO_OFF',chr(hexdec('1B')).chr(hexdec('3B')).chr(hexdec('60')).chr(hexdec('58')).chr(hexdec('51')));
-define('PRO_LOCALECHO_ON',chr(hexdec('1B')).chr(hexdec('3B')).chr(hexdec('61')).chr(hexdec('58')).chr(hexdec('51')));
+define('PRO_MIN',chr(0x1B).chr(0x3A).chr(0x69).chr(0x45));
+define('PRO_MAJ',chr(0x1B).chr(0x3A).chr(0x6A).chr(0x45));
+define('PRO_LOCALECHO_OFF',chr(0x1B).chr(0x3B).chr(0x60).chr(0x58).chr(0x51));
+define('PRO_LOCALECHO_ON',chr(0x1B).chr(0x3B).chr(0x61).chr(0x58).chr(0x51));
 
 
 // Touche de fonctione acceptables pour une saisie utilisateur
@@ -327,47 +325,47 @@ class MiniPaviCli {
 		'/β/','/ß/','/œ/','/Œ/','/ü/','/û/','/ú/','/ù/','/ö/','/ô/','/ó/','/ò/','/ï/','/î/','/í/','/ì/','/ë/','/ä/',
 		'/â/','/á/','/£/','/°/','/±/','/←/','/↑/','/→/','/↓/','/¼/','/½/','/¾/','/Â/');
 		
-		$tabG2=array(VDT_G2.chr(hexdec('42')).'e',
-		VDT_G2.chr(hexdec('41')).'e',
-		VDT_G2.chr(hexdec('41')).'a',
-		VDT_G2.chr(hexdec('4B')).chr(hexdec('63')),
-		VDT_G2.chr(hexdec('43')).'e',
-		VDT_G2.chr(hexdec('42')).'E',
-		VDT_G2.chr(hexdec('41')).'E',
-		VDT_G2.chr(hexdec('41')).'A',
-		VDT_G2.chr(hexdec('4B')).chr(hexdec('63')),
-		VDT_G2.chr(hexdec('43')).'E',
-		VDT_G2.chr(hexdec('7B')),		
-		VDT_G2.chr(hexdec('7B')),		
-		VDT_G2.chr(hexdec('7A')),		
-		VDT_G2.chr(hexdec('6A')),		
-		VDT_G2.chr(hexdec('48')).chr(hexdec('75')),		
-		VDT_G2.chr(hexdec('43')).chr(hexdec('75')),		
-		VDT_G2.chr(hexdec('42')).chr(hexdec('75')),		
-		VDT_G2.chr(hexdec('41')).chr(hexdec('75')),		
-		VDT_G2.chr(hexdec('48')).chr(hexdec('6F')),		
-		VDT_G2.chr(hexdec('43')).chr(hexdec('6F')),		
-		VDT_G2.chr(hexdec('42')).chr(hexdec('6F')),		
-		VDT_G2.chr(hexdec('41')).chr(hexdec('6F')),		
-		VDT_G2.chr(hexdec('48')).chr(hexdec('69')),		
-		VDT_G2.chr(hexdec('43')).chr(hexdec('69')),		
-		VDT_G2.chr(hexdec('42')).chr(hexdec('69')),		
-		VDT_G2.chr(hexdec('41')).chr(hexdec('69')),		
-		VDT_G2.chr(hexdec('48')).chr(hexdec('65')),		
-		VDT_G2.chr(hexdec('48')).chr(hexdec('61')),		
-		VDT_G2.chr(hexdec('43')).chr(hexdec('61')),		
-		VDT_G2.chr(hexdec('42')).chr(hexdec('61')),
-		VDT_G2.chr(hexdec('23')),		
-		VDT_G2.chr(hexdec('30')),		
-		VDT_G2.chr(hexdec('31')),		
-		VDT_G2.chr(hexdec('2C')),		
-		VDT_G2.chr(hexdec('2D')),		
-		VDT_G2.chr(hexdec('2E')),		
-		VDT_G2.chr(hexdec('2F')),		
-		VDT_G2.chr(hexdec('3C')),		
-		VDT_G2.chr(hexdec('3D')),		
-		VDT_G2.chr(hexdec('3E')),
-		VDT_G2.chr(hexdec('43')).'A'
+		$tabG2=array(VDT_G2.chr(0x42).'e',
+		VDT_G2.chr(0x41).'e',
+		VDT_G2.chr(0x41).'a',
+		VDT_G2.chr(0x4B).chr(0x63),
+		VDT_G2.chr(0x43).'e',
+		VDT_G2.chr(0x42).'E',
+		VDT_G2.chr(0x41).'E',
+		VDT_G2.chr(0x41).'A',
+		VDT_G2.chr(0x4B).chr(0x63),
+		VDT_G2.chr(0x43).'E',
+		VDT_G2.chr(0x7B),		
+		VDT_G2.chr(0x7B),		
+		VDT_G2.chr(0x7A),		
+		VDT_G2.chr(0x6A),		
+		VDT_G2.chr(0x48).chr(0x75),		
+		VDT_G2.chr(0x43).chr(0x75),		
+		VDT_G2.chr(0x42).chr(0x75),		
+		VDT_G2.chr(0x41).chr(0x75),		
+		VDT_G2.chr(0x48).chr(0x6F),		
+		VDT_G2.chr(0x43).chr(0x6F),		
+		VDT_G2.chr(0x42).chr(0x6F),		
+		VDT_G2.chr(0x41).chr(0x6F),		
+		VDT_G2.chr(0x48).chr(0x69),		
+		VDT_G2.chr(0x43).chr(0x69),		
+		VDT_G2.chr(0x42).chr(0x69),		
+		VDT_G2.chr(0x41).chr(0x69),		
+		VDT_G2.chr(0x48).chr(0x65),		
+		VDT_G2.chr(0x48).chr(0x61),		
+		VDT_G2.chr(0x43).chr(0x61),		
+		VDT_G2.chr(0x42).chr(0x61),
+		VDT_G2.chr(0x23),		
+		VDT_G2.chr(0x30),		
+		VDT_G2.chr(0x31),		
+		VDT_G2.chr(0x2C),		
+		VDT_G2.chr(0x2D),		
+		VDT_G2.chr(0x2E),		
+		VDT_G2.chr(0x2F),		
+		VDT_G2.chr(0x3C),		
+		VDT_G2.chr(0x3D),		
+		VDT_G2.chr(0x3E),
+		VDT_G2.chr(0x43).'A'
 		);
 		
 		return preg_replace($tabAcc, $tabG2, $str);	
