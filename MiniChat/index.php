@@ -2,28 +2,29 @@
 /**
  * @file miniChat.php
  * @author Jean-arthur SILVE <contact@minipavi.fr>
- * @version 1.0 Novembre 2023
+ * @version 1.1 Novembre 2023
  *
  * Script de service de dialogue en direct basique pour Minitel via passerelle MiniPAVI
- * A des fins de démonstration
+ * avec support chatGPT. Réalisé sans nécessité de BD
+ *
+ * A des fins de démonstration - Licence GNU GPL
  * 
  */
 
 require "../lib/MiniPaviCli.php";// A MODIFIER
 require "miniChatFunctions.php";
+require "animGPT.php";
 
 const MINICHAT_MAXCONN = 100;	// Nombre de connectés maximum
 const MINICHAT_NUMPARPAGE = 16;	// Nombre de connectés apparaissant sur chaque page
 const MINICHAT_TIMEOUT = 900;	// Temps maximum sans action avant d'être supprimé du chat
 
-// Attention à autoriser le script en lecture/écriture (et création) sur ces fichiers !!
-const MINICHAT_PATH_MSGLIST = 'messages.list';	// Fichier de la liste des message
-const MINICHAT_PATH_CNXLIST = 'connected.list';	// Fichier de la liste des connectés
+const MINICHAT_CHATGPT = true;	// Activation de chatgpt
 
 
 //error_reporting(E_USER_NOTICE|E_USER_WARNING);
-error_reporting(E_ERROR);
-ini_set('display_errors',0);
+error_reporting(E_ERROR|E_WARNING);
+ini_set('display_errors',0);			
 
 
 /****************************************************
@@ -93,41 +94,106 @@ Enjoy!
 
 try {
 	
+	// On commence toujours par cela
 	MiniPavi\MiniPaviCli::start();
 
+	if (MiniPavi\MiniPaviCli::$fctn == 'BGCALL') {
+		// Il s'agit d'une requête programmée effectuée en arrière plan par MiniPavi
+		// Dans miniChat, c'est pour traiter un message dont le destinataire est chatGPT		
+		// le paramètre "id" de la requête contient l'identifiant du "connecté" chatGPT
+		// qui a reçu un message
+		if (MINICHAT_CHATGPT) {
+			
+			$destId=cGPT_messageReceived(@MiniPavi\MiniPaviCli::$urlParams->id);
+			if ($destId>0) {
+				// chatGPT a répondu: on prévient le destinataire
+				$flist = mchat_openListFile();
+				mchat_updateLastAction($flist,@MiniPavi\MiniPaviCli::$urlParams->id);			// Le connecté AI est encore en vie!
+				@fclose($flist);	
+				$cmd = MiniPavi\MiniPaviCli::createPushServiceMsgCmd(array('Vous avez recu un message!'),array($destId));
+				MiniPavi\MiniPaviCli::send('','','',true,$cmd);
+			} else
+				// Pas de réponse effectuée (cas si le connecté chatGPT a été supprimé entre temps)
+				MiniPavi\MiniPaviCli::send('','','',true);
+			exit;
+		}
+	}
+	
 	if (MiniPavi\MiniPaviCli::$fctn == 'CNX') {
+		// Nouvelle connexion
 		$step = 0;
 		$context = array();
 		MiniPavi\MiniPaviCli::$content=array();
 		trigger_error("[MiniChat] CNX");
 	} else {
+		// Connexion en cours
 		setStep((int)@MiniPavi\MiniPaviCli::$urlParams->step);		// Etape du script à executer, indiqué dans le paramètre 'url' de la requête http
-		$context = unserialize(MiniPavi\MiniPaviCli::$context);		// Récupération du contexte utilisateur
+		$context = @unserialize(MiniPavi\MiniPaviCli::$context);	// Récupération du contexte utilisateur
 	}
 
 	
 	if (MiniPavi\MiniPaviCli::$fctn == 'FIN' || MiniPavi\MiniPaviCli::$fctn == 'FCTN?') {
-			// Deconnexion (attention, bug peut être appellé plusieurs fois de suite..)
+			// Deconnexion (attention, peut être appellé plusieurs fois de suite..)
 			trigger_error("[MiniChat] DECO");
-			removeConnected(MiniPavi\MiniPaviCli::$uniqueId);
+			$flist = mchat_openListFile();
+			$fmsg = mchat_openMsgFile();
+			mchat_removeConnected($flist,$fmsg,MiniPavi\MiniPaviCli::$uniqueId);
+			@fclose($flist);
+			@fclose($fmsg);
+			if (MINICHAT_CHATGPT) {
+				// Si charGPT activé, on supprime l'historique des conversations
+				$fctx=cGPT_openHistoFile();
+				cGPT_removeHisto($fctx,0,MiniPavi\MiniPaviCli::$uniqueId);
+				@fclose($fctx);
+			}
 			exit;
 	}
 	
-	$found=updateLastAction(MiniPavi\MiniPaviCli::$uniqueId);		// On garde le timestamp du dernier accès, pour faire un nettoyage de temps en temps, au cas ou.
-	if (!$found && $step>20) {	// L'utilisateur n'est pas dans la liste des connectés et est sur une étape après l'identification: on le renvoi au début
+
+	
+	$flist = mchat_openListFile();
+	$found=mchat_updateLastAction($flist,MiniPavi\MiniPaviCli::$uniqueId);		// On garde le timestamp du dernier accès, pour faire un nettoyage de temps en temps, au cas ou.
+	@fclose($flist);
+	
+	if (!$found && $step>20) {
+		// L'utilisateur n'est pas dans la liste des connectés et est sur une étape après l'identification: on le renvoi au début
 		$step = 0;
 		$context=array();
 	}
-	chatClean();	// Nettoyage des vieilles connexions éventuelles
+	
+	$flist = mchat_openListFile();
+	$fmsg = mchat_openMsgFile();
+	mchat_chatClean($flist,$fmsg);	// Nettoyage des vieilles connexions éventuelles
+	@fclose($flist);
+	@fclose($fmsg);
+
 	
 	$vdt='';		// Contenu à envoyer au Minitel de l'utilisateur
 	$cmd=null;		// Commande à executer au niveau de MiniPAVI
+	
+	
+	if (!empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off') {
+		$prot='https';
+	} elseif (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https') {
+		$prot='https';
+	} elseif (!empty($_SERVER['HTTP_FRONT_END_HTTPS']) && strtolower($_SERVER['HTTP_FRONT_END_HTTPS']) !== 'off') {
+		$prot='https';
+	} elseif (isset($_SERVER['SERVER_PORT']) && intval($_SERVER['SERVER_PORT']) === 443) {
+		$prot='https';
+	} else
+		$prot='http';
+	
+	
 	while(true) {
 		switch ($step) {
 			case 0:
 				// Accueil: affichage partie fixe
 				$vdt = MiniPavi\MiniPaviCli::clearScreen().PRO_MIN.PRO_LOCALECHO_OFF;
 				$vdt.= file_get_contents('MiniChatAcc.vdt');
+				
+				$vdt.=MiniPavi\MiniPaviCli::setPos(7,15);
+				$vdt.=VDT_TXTYELLOW.VDT_FDINV.VDT_BLINK.MiniPavi\MiniPaviCli::toG2('> Service animé par ChatGPT <');
+				
 				$vdt.=MiniPavi\MiniPaviCli::setPos(2,18);
 				$vdt.=VDT_TXTWHITE.'Pseudonyme:..........';
 				$vdt.=' '.VDT_FDINV.' Suite '.VDT_FDNORM;
@@ -192,7 +258,11 @@ try {
 					setStep(1);
 					break;
 				}
-				$tCnx = getConnectedList($numCnx);
+				
+				$flist = mchat_openListFile();
+				$tCnx = mchat_getConnectedList($flist,$numCnx);
+				@fclose($flist);
+				
 				
 				if ($numCnx>=MINICHAT_MAXCONN) {
 					$vdt=MiniPavi\MiniPaviCli::writeLine0('Le chat est déjà plein ! Désolé !');
@@ -207,7 +277,11 @@ try {
 						break 2;
 					}
 				}
-				addConnected(MiniPavi\MiniPaviCli::$uniqueId,$context['pseudo'],@$context['cv']);
+				
+				$flist = mchat_openListFile();
+				mchat_addConnected($flist,MiniPavi\MiniPaviCli::$uniqueId,$context['pseudo'],@$context['cv']);
+				@fclose($flist);
+				
 				trigger_error("[MiniChat] ".($numCnx+1)." connecte(s)");
 				setStep(21);
 				break;
@@ -229,15 +303,23 @@ try {
 				
 				break;
 			case 22:
-				// Liste des connectés : affichage partie variable (liste des connectés)
+				// Liste des connectés : affichage partie variable (liste des connectés) et mise à jour eventuelle des AI chatGPT
+				
+				if (MINICHAT_CHATGPT) {
+					// Mise à jour de la liste des connectés avec chatGPT
+					cGPT_populate();
+				}
+				
+				
 				$vdt.=VDT_CUROFF;
 				
 				for($i=0;$i<$context['linetoclear'];$i++) {
 					$vdt.=MiniPavi\MiniPaviCli::setPos(1,5+$i).MiniPavi\MiniPaviCli::repeatChar(' ',5).'|'.MiniPavi\MiniPaviCli::repeatChar(' ',10).'| '.VDT_CLRLN; 
 				}
 			
-				
-				$tCnx = getConnectedList($numCnx,true);
+				$flist = mchat_openListFile();
+				$tCnx = mchat_getConnectedList($flist,$numCnx,true);
+				@fclose($flist);				
 				
 				if ($numCnx<2) 
 					$txt="Vous êtes seul".VDT_CLRLN;
@@ -278,7 +360,10 @@ try {
 				break;
 			case 23:
 				// Liste des connectés : création de la zone de saisie et affichage nombre de messages en attente
-				$tMsg = getMsgFor(@MiniPavi\MiniPaviCli::$uniqueId);
+				$fmsg = mchat_openMsgFile();				
+				$tMsg = mchat_getMsgFor($fmsg,@MiniPavi\MiniPaviCli::$uniqueId);
+				@fclose($fmsg);
+				
 				$numMsg = count($tMsg);
 				if ($numMsg<1) {
 					$vdt.=MiniPavi\MiniPaviCli::setPos(1,21).VDT_TXTCYAN.VDT_BGBLUE.' Aucun message en attente'.VDT_CLRLN;
@@ -296,7 +381,12 @@ try {
 				// Liste des connectés : traitement de l'entrée utilisateur
 				if (MiniPavi\MiniPaviCli::$fctn == 'SOMMAIRE') {
 					// Sortie du chat
-					removeConnected(MiniPavi\MiniPaviCli::$uniqueId);
+					$flist = mchat_openListFile();
+					$fmsg = mchat_openMsgFile();
+					mchat_removeConnected($flist,$fmsg,MiniPavi\MiniPaviCli::$uniqueId);
+					@fclose($flist);
+					@fclose($fmsg);
+					
 					setStep(0);
 					break;
 				}
@@ -308,7 +398,9 @@ try {
 				}
 				if (MiniPavi\MiniPaviCli::$fctn == 'SUITE') {
 					// Passage à la page suivante si possible
-					$tCnx = getConnectedList($numCnx);
+					$flist = mchat_openListFile();
+					$tCnx = mchat_getConnectedList($flist,$numCnx);
+					@fclose($flist);
 					if (($context['page']+1)*MINICHAT_NUMPARPAGE >= $numCnx) {
 						$vdt=MiniPavi\MiniPaviCli::writeLine0('Dernière page atteinte!');
 						setStep(22); // Et on rafraichit la liste
@@ -322,7 +414,9 @@ try {
 				}
 				if (MiniPavi\MiniPaviCli::$fctn == 'RETOUR') {
 					// Passage à la page précédente si possible
-					$tCnx = getConnectedList($numCnx);
+					$flist = mchat_openListFile();
+					$tCnx = mchat_getConnectedList($flist,$numCnx);
+					@fclose($flist);
 					if (($context['page']-1)<0) {
 						$vdt=MiniPavi\MiniPaviCli::writeLine0('Première page atteinte!');
 						setStep(22);	// Et on rafraichit la liste
@@ -345,7 +439,9 @@ try {
 					break;
 				}
 				$numDest--;
-				$tCnx = getConnectedList($numCnx,true);
+				$flist = mchat_openListFile();
+				$tCnx = mchat_getConnectedList($flist,$numCnx,true);
+				@fclose($flist);
 				if (!isset($tCnx[$numDest]) || $tCnx[$numDest]['id']=='') {
 					$vdt=MiniPavi\MiniPaviCli::writeLine0('Destinataire inconnu!');
 					setStep(23);
@@ -353,6 +449,7 @@ try {
 				}
 				$context['sendiddest'] = $tCnx[$numDest]['id'];
 				$context['sendnamedest'] = $tCnx[$numDest]['name'];
+				$context['sendtypedest'] = $tCnx[$numDest]['type'];
 				unset($context['sendidmsg']);
 				setStep(60);				
 				break;
@@ -360,7 +457,10 @@ try {
 				
 			case 50:
 				// Lecture des messages: Affichage partie fixe
-				$tMsg = getMsgFor(@MiniPavi\MiniPaviCli::$uniqueId);
+				$fmsg = mchat_openMsgFile();
+				$tMsg = mchat_getMsgFor($fmsg,@MiniPavi\MiniPaviCli::$uniqueId);
+				@fclose($fmsg);
+				
 				if (count($tMsg)<1) {
 					$vdt=MiniPavi\MiniPaviCli::writeLine0('Aucun message en attente!');
 					if (@$context['frommsgsend']==1) {
@@ -430,27 +530,55 @@ try {
 				
 				if (isset($context['sendidmsg'])) {
 					// Réponse à un message
-					$tMsg = getMsgFor(0,$context['sendidmsg']);
+					$fmsg = mchat_openMsgFile();
+					$tMsg = mchat_getMsgFor($fmsg,0,$context['sendidmsg']);
+					@fclose($fmsg);
 					if (count($tMsg)!=1) {
 						// Message à disparu, ne devrait pas arriver
 						unset($context['sendidmsg']);
 						setStep(21);
 						break;
 					}
-					delMsg($tMsg[0]['idmsg']);
-					
+					$fmsg = mchat_openMsgFile();
+					mchat_delMsg($fmsg,$tMsg[0]['idmsg']);
+					@fclose($fmsg);
 					
 					if (trim(implode(@MiniPavi\MiniPaviCli::$content)!='')) {
 						// Le message n'est pas vide
-						setMsg(@MiniPavi\MiniPaviCli::$uniqueId,$tMsg[0]['idexp'],$context['pseudo'],@MiniPavi\MiniPaviCli::$content,$tMsg[0]['content']);
-						// On prévient le destinataire						
-						$cmd = MiniPavi\MiniPaviCli::createPushServiceMsgCmd(array('Vous avez recu un message!'),array($tMsg[0]['idexp']));
+						$fmsg = mchat_openMsgFile();
+						$flist = mchat_openListFile();
+						mchat_setMsg($fmsg,$flist,@MiniPavi\MiniPaviCli::$uniqueId,$tMsg[0]['idexp'],MCHAT_TYPE_NORMAL,$tMsg[0]['typeexp'],$context['pseudo'],$tMsg[0]['nameexp'],@MiniPavi\MiniPaviCli::$content,$tMsg[0]['content']);
+						@fclose($flist);
+						@fclose($fmsg);
+						if ($tMsg[0]['typeexp'] == MCHAT_TYPE_NORMAL) {
+							// On prévient le destinataire	
+							$cmd = MiniPavi\MiniPaviCli::createPushServiceMsgCmd(array('Vous avez recu un message!'),array($tMsg[0]['idexp']));
+						} else {
+							// Message pour ChatGPT
+							// Demande d'appel différé par MiniPavi afin de traiter le message
+							$tUrl=array($prot."://".$_SERVER['HTTP_HOST']."".$_SERVER['PHP_SELF'].'?step=1000&id='.$tMsg[0]['idexp']);
+							$tTime=array(time()+rand(5,10));	// Leger différé de la requête, pour que ca fasse plus vrai: personne ne réponds immédiattement
+							$cmd = MiniPavi\MiniPaviCli::createBackgroundCallCmd($tUrl,$tTime);
+						}
 					}
 				} else {
 					// Envoi d'un nouveau message
-					setMsg(@MiniPavi\MiniPaviCli::$uniqueId,$context['sendiddest'],$context['pseudo'],@MiniPavi\MiniPaviCli::$content);					
-					// On prévient le destinataire
-					$cmd = MiniPavi\MiniPaviCli::createPushServiceMsgCmd(array('Vous avez recu un message!'),array($context['sendiddest']));
+					$fmsg = mchat_openMsgFile();
+					$flist = mchat_openListFile();
+					mchat_setMsg($fmsg,$flist,@MiniPavi\MiniPaviCli::$uniqueId,$context['sendiddest'],MCHAT_TYPE_NORMAL,$context['sendtypedest'],$context['pseudo'],$context['sendnamedest'],@MiniPavi\MiniPaviCli::$content);					
+					@fclose($flist);
+					@fclose($fmsg);
+					
+					if ($context['sendtypedest'] == MCHAT_TYPE_NORMAL) {
+						// On prévient le destinataire
+						$cmd = MiniPavi\MiniPaviCli::createPushServiceMsgCmd(array('Vous avez recu un message!'),array($context['sendiddest']));
+					} else {
+						// ChatGPT
+						// Demande d'appel différé par MiniPavi afin de traiter le message
+						$tUrl=array($prot."://".$_SERVER['HTTP_HOST']."".$_SERVER['PHP_SELF'].'?step=1000&id='.$context['sendiddest']);
+						$tTime=array(time()+rand(5,10));	// Leger différé de la requête, pour que ca fasse plus vrai: personne ne réponds immédiattement
+						$cmd = MiniPavi\MiniPaviCli::createBackgroundCallCmd($tUrl,$tTime);
+					}
 				}
 				
 				
@@ -460,6 +588,7 @@ try {
 					// La saisie du message fait suite à la lecture d'un message reçu: on passa au message suivant
 					unset($context['sendidmsg']);
 					unset($context['sendiddest']);
+					unset($context['sendtypedest']);
 					setStep(50);
 					$directCall=true;
 					$context['frommsgsend']=1;
@@ -471,6 +600,7 @@ try {
 					// La saisie du message fait suite à la création d'un nouveau message: on retourne à la liste
 					unset($context['sendiddest']);
 					unset($context['sendnamedest']);
+					unset($context['sendtypedest']);
 					setStep(21);
 					$directCall=true;
 					// On ne pars pas directement à l'étape 21 (liste) car autrement la commande d'envoi push ne partira pas
@@ -490,20 +620,14 @@ try {
 
 				setStep(52);	// La saisie d'un mouveau message est commune avec la réponse à un message
 				break;
+				
+			default:
+				exit;
+				
 		}
 	}
 	
 	// Url à appeller lors de la prochaine saisie utilisateur (ou sans attendre si directCall=true)
-	if (!empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off') {
-		$prot='https';
-	} elseif (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https') {
-		$prot='https';
-	} elseif (!empty($_SERVER['HTTP_FRONT_END_HTTPS']) && strtolower($_SERVER['HTTP_FRONT_END_HTTPS']) !== 'off') {
-		$prot='https';
-	} elseif (isset($_SERVER['SERVER_PORT']) && intval($_SERVER['SERVER_PORT']) === 443) {
-		$prot='https';
-	} else
-		$prot='http';
 
 	$nextPage=$prot."://".$_SERVER['HTTP_HOST']."".$_SERVER['PHP_SELF'].'?step='.$step;
 

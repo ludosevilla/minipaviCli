@@ -5,30 +5,60 @@
  * @version 1.0 Novembre 2023
  *
  * Fonctions utlisées dans le script miniChat.php
- * 
+ *
+ * Licence GNU GPL 
  */
 
-// Fonction de tri des messages
-function _sortMsg($a,$b) {
+// Attention à autoriser le script en lecture/écriture (et création) sur ces fichiers !!
+define('MINICHAT_MSGLIST','messages.list');	// Fichier de la liste des message
+define('MINICHAT_CNXLIST','connected.list');	// Fichier de la liste des connectés
+
+define('MCHAT_TYPE_NORMAL',0);
+define('MCHAT_TYPE_CGPT',1);
+
+function mchat__sortMsg($a,$b) {
 	return $a['time']>$b['time'];
 }
 
-// Récupère les messages pour le destinataire $id (ou tous si $id=0), ou le message $idMsg si $idMsg!=''
-function getMsgFor($id=0,$idMsg='') {
+function mchat_openListFile() {
+	if (!file_exists(MINICHAT_CNXLIST))
+		$f = fopen(MINICHAT_CNXLIST,'w+');
+	else
+		$f = fopen(MINICHAT_CNXLIST,'r+');
+	flock($f,LOCK_EX);
+	return $f;
+}
+
+function mchat_openMsgFile() {
+	if (!file_exists(MINICHAT_MSGLIST))
+		$f = fopen(MINICHAT_MSGLIST,'w+');
+	else
+		$f = fopen(MINICHAT_MSGLIST,'r+');
+	flock($f,LOCK_EX);
+	return $f;
+}
+
+
+/*****************
+*** Récupère les messages pour le destinataire $id (ou tous si $id=0), ou le message $idMsg si $idMsg!=''
+******************/
+
+function mchat_getMsgFor($fmsg,$id=0,$idMsg='') {
 	$tRes = array();
 
-		
-	$f = @fopen(MINICHAT_PATH_MSGLIST,'r');
-	if ($f) {
-		flock($f,LOCK_EX);
-		$r = fgets($f);
+	if ($fmsg) {
+		rewind($fmsg);
+		$r = fgets($fmsg);
 		if ($r === false) {
-			fclose($f);
 			return $tRes;
 		}
+		
+		
+		
 		if (strlen($r)>0) {
 			$tResTmp = unserialize($r);
 		}
+
 		if ($idMsg=='') {
 			if($id>0) {
 				foreach($tResTmp as $k=>$msg) {
@@ -37,7 +67,7 @@ function getMsgFor($id=0,$idMsg='') {
 				}
 			}
 			else $tRes = $tResTmp;
-			usort($tRes, "_sortMsg");
+			usort($tRes, "mchat__sortMsg");
 		} else {
 			foreach($tResTmp as $k=>$msg) {
 				if ($msg['idmsg'] == $idMsg) {
@@ -46,55 +76,77 @@ function getMsgFor($id=0,$idMsg='') {
 				}
 			}
 		}
-	fclose($f);		
 	}
 	return $tRes;
 }
 
-// Ajoute un nouveau message
-function setMsg($idExp,$idDest,$nameExp,$content,$prevContent=array()) {
-	if (!file_exists(MINICHAT_PATH_MSGLIST))
-		$f = fopen(MINICHAT_PATH_MSGLIST,'w+');
-	else
-		$f = fopen(MINICHAT_PATH_MSGLIST,'r+');
-	if ($f) {
+
+/*****************
+*** Ajoute un nouveau message
+******************/
+
+function mchat_setMsg($fmsg,$flist,$idExp,$idDest,$typeExp,$typeDest,$nameExp,$nameDest,$content,$prevContent=array()) {
+	if ($fmsg && $fmsg) {
+		
+		$found = false;
+		$tList=mchat_getConnectedList($flist,$num,true);
+		foreach($tList as $cnx) {
+			if ($cnx['id'] == $idDest) {
+				$found = true;
+				break;
+			}
+		}
+		
+		if (!$found) {
+			return true;
+		}
+		
+		
+		
+		rewind($fmsg);
 		$tMsg=array();
-		flock($f,LOCK_EX);
-		$r = fgets($f);
+		$r = fgets($fmsg);
 		if ($r!== false && strlen($r)>0) {
 			$tMsg = unserialize($r);
 		}
 		$i=count($tMsg);
-		//print_r($tMsg);
+
+		
+		foreach($content as $k=>$v) {
+			$content[$k]=str_replace("\r"," ",$content[$k]);	
+			$content[$k]=str_replace("\n"," ",$content[$k]);	
+		}
+		
 		$tMsg[$i]['idmsg']=uniqid();
 		$tMsg[$i]['time']=time();
 		$tMsg[$i]['idexp']=$idExp;
 		$tMsg[$i]['nameexp']=trim($nameExp);
+		$tMsg[$i]['namedest']=trim($nameDest);
 		$tMsg[$i]['iddest']=$idDest;
+		$tMsg[$i]['typedest']=$typeDest;
+		$tMsg[$i]['typeexp']=$typeExp;
 		$tMsg[$i]['content']=$content;
 		$tMsg[$i]['prevcontent']=$prevContent;
-		//print_r($tMsg);
-		ftruncate($f,0);
-		rewind($f);		
-		fputs($f,serialize($tMsg));
-		fclose($f);		
+
+		ftruncate($fmsg,0);
+		rewind($fmsg);		
+		fputs($fmsg,serialize($tMsg));
 		return true;
 	}
 	return false;
 }
 
-// Supprime le messages dont le idmsg=$idMsg (ou dont le iddest=$idMsg si $isIdDest=true)
-function delMsg($idMsg,$isIdDest=false) {
-	if (!file_exists(MINICHAT_PATH_MSGLIST))
-		$f = fopen(MINICHAT_PATH_MSGLIST,'w+');
-	else
-		$f = fopen(MINICHAT_PATH_MSGLIST,'r+');
-	if ($f) {
+
+/*****************
+*** Supprime le messages dont le idmsg=$idMsg (ou dont le iddest=$idMsg si $isIdDest=true)
+******************/
+
+function mchat_delMsg($fmsg,$idMsg,$isIdDest=false) {
+	if ($fmsg) {
 		$tMsg=array();
-		flock($f,LOCK_EX);
-		$r = fgets($f);
+		rewind($fmsg);
+		$r = fgets($fmsg);
 		if ($r === false) {
-			fclose($f);
 			return false;
 		}
 		if (strlen($r)>0) {
@@ -110,35 +162,38 @@ function delMsg($idMsg,$isIdDest=false) {
 			}
 		}
 		if (!$found) {
-			fclose($f);		
 			return true;
 		}
 		$tMsg = array_values($tMsg);
-		ftruncate($f,0);
-		rewind($f);		
-		fputs($f,serialize($tMsg));
-		fclose($f);		
+		ftruncate($fmsg,0);
+		rewind($fmsg);		
+		fputs($fmsg,serialize($tMsg));
 		return true;
 	}
 	return false;
 }
 
-// Efface la liste des connectés
-function clearConnectedList() {
-	setConnectedList(array());
+/*****************
+*** Efface la liste des connectés
+******************/
+
+function mchat_clearConnectedList($flist) {
+	mchat_setConnectedList($flist,array());
 }
 
-// Retourne la liste des connectés et le nombre de connectés.
-// Si $clean=true, le tableau retourné ne comporte pas d'éléments vides.
-function getConnectedList(&$num,$clean=false) {
+
+/*****************
+*** Retourne la liste des connectés et le nombre de connectés.
+*** Si $clean=true, le tableau retourné ne comporte pas d'éléments vides.
+******************/
+
+function mchat_getConnectedList($flist,&$num,$clean=false) {
 	$tRes = array();
 	$num=0;
-	$f = @fopen(MINICHAT_PATH_CNXLIST,'r');
-	if ($f) {
-		flock($f,LOCK_EX);
-		$r = fgets($f);
+	if ($flist) {
+		rewind($flist);
+		$r = fgets($flist);
 		if ($r === false) {
-			fclose($f);
 			return $tRes;
 		}
 		if (strlen($r)>0) {
@@ -150,69 +205,79 @@ function getConnectedList(&$num,$clean=false) {
 				unset($tRes[$k]);
 			}
 			
-		fclose($f);
 	}
 	return $tRes;
 	
 }
 
-// Ajoute un connecté à la liste
-function addConnected($id,$name,$cv) {
-	$t = getConnectedList($null);
+
+/*****************
+*** Ajoute un connecté à la liste
+******************/
+
+function mchat_addConnected($flist,$id,$name,$cv,$type=MCHAT_TYPE_NORMAL) {
+	$t = mchat_getConnectedList($flist,$null);
 	foreach($t as $key=>$vals) {
 		if ($t[$key]['id']=='') {
 			$t[$key]['id']=$id;
 			$t[$key]['tlast']=time();
+			$t[$key]['tcnx']=time();
 			$t[$key]['name']=trim($name);
 			$t[$key]['cv']=trim($cv);
-			setConnectedList($t);
+			$t[$key]['type']=$type;
+			mchat_setConnectedList($flist,$t);
 			return;
 		}
 	}
 	$i = count($t);
 	$t[$i]['id']=$id;
 	$t[$i]['tlast']=time();
+	$t[$i]['tcnx']=time();
 	$t[$i]['name']=trim($name);
 	$t[$i]['cv']=trim($cv);
-	setConnectedList($t);
+	$t[$i]['type']=$type;	
+	mchat_setConnectedList($flist,$t);
 }
 
-// Supprime un connecté de la liste
-function removeConnected($id) {
-	$t = getConnectedList($null);
+/*****************
+*** Supprime un connecté de la liste
+******************/
+
+function mchat_removeConnected($flist,$fmsg,$id) {
+	$t = mchat_getConnectedList($flist,$null);
 	foreach($t as $key=>$vals) {
 		if ($vals['id']==$id) {
 			$t[$key]['id']='';
 		}
 	}
-	setConnectedList($t);
-	delMsg($id,true);
+	mchat_setConnectedList($flist,$t);
+	mchat_delMsg($fmsg,$id,true);
 }
 
-// Enregistre la liste des connectés
-function setConnectedList($t) {
-	$f = fopen(MINICHAT_PATH_CNXLIST,'w');
-	if ($f) {
-		flock($f,LOCK_EX);
-		fputs($f,serialize($t));
-		fclose($f);
+/*****************
+*** Enregistre la liste des connectés
+******************/
+
+function mchat_setConnectedList($flist,$t) {
+	if ($flist) {
+		ftruncate($flist,0);
+		rewind($flist);
+		fputs($flist,serialize($t));
 	}
 }
 
 
+/*****************
+*** Mise à jour du timestamp de la dernière activité
+******************/
 
-function updateLastAction($id) {
+function mchat_updateLastAction($flist,$id) {
 	$tRes = array();
 	$found=false;
-	if (!file_exists(MINICHAT_PATH_CNXLIST))
-		$f = fopen(MINICHAT_PATH_CNXLIST,'w+');
-	else
-		$f = fopen(MINICHAT_PATH_CNXLIST,'r+');
-	if ($f) {
-		flock($f,LOCK_EX);
-		$r = fgets($f);
+	if ($flist) {
+		rewind($flist);
+		$r = fgets($flist);
 		if ($r === false) {
-			fclose($f);
 			return $found;
 		}
 		if (strlen($r)>0) {
@@ -225,41 +290,41 @@ function updateLastAction($id) {
 				break;
 			}
 		}
-		ftruncate($f,0);
-		rewind($f);		
-		fputs($f,serialize($tRes));
-		fclose($f);
+		ftruncate($flist,0);
+		rewind($flist);		
+		fputs($flist,serialize($tRes));
 	}
 	return $found;
 }
 
-// Nettoyage des connexions inactives depuis plus d'une heure // MARCHE PAS
-function chatClean() {
+
+/*****************
+*** Nettoyage des connexions inactives depuis plus d'une heure 
+******************/
+function mchat_chatClean($flist,$fmsg) {
 	$tDel=array();
 	
-	$f = @fopen(MINICHAT_PATH_CNXLIST,'r+');
-	if ($f) {
-		flock($f,LOCK_EX);
-		$r = fgets($f);
+
+	if ($flist && $fmsg) {
+		rewind($flist);		
+		$r = fgets($flist);
 		if ($r === false) {
-			fclose($f);
 			return $tDel;
 		}
 		if (strlen($r)>0) {
 			$tRes = unserialize($r);
 		}
 		foreach($tRes as $k=>$v) {
-			if ($tRes[$k]['id']!='' && (int)($v['tlast'])+MINICHAT_TIMEOUT<time()) {
+			if ($tRes[$k]['type']==MCHAT_TYPE_NORMAL && $tRes[$k]['id']!='' && (int)($v['tlast'])+MINICHAT_TIMEOUT<time()) {
 				trigger_error("[MiniChatFunc] Ghost ".$tRes[$k]['id']);
 				$tDel[]=$tRes[$k]['id'];
-				delMsg($tRes[$k]['id'],true);
+				mchat_delMsg($fmsg,$tRes[$k]['id'],true);
 				$tRes[$k]['id']='';
 			}
 		}
-		ftruncate($f,0);
-		rewind($f);		
-		fputs($f,serialize($tRes));
-		fclose($f);
+		ftruncate($flist,0);
+		rewind($flist);		
+		fputs($flist,serialize($tRes));
 	}
 	return $tDel;
 }
