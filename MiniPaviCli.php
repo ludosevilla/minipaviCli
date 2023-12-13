@@ -2,7 +2,7 @@
 /**
  * @file MiniPaviCli.php
  * @author Jean-arthur SILVE <contact@minipavi.fr>
- * @version 1.0 Novembre 2023
+ * @version 1.1 Novembre 2023
  *
  * Communication avec la passerelle MiniPavi
  *
@@ -259,6 +259,34 @@ class MiniPaviCli {
 	
 		return $cmd;
 	}
+
+
+	/*************************************************
+	// Demande d'appel par MiniPavi d'une url
+	// à un instant donné
+	// tUrl: tableau des url à appeller
+	// tTime: tableau des timestamp
+	**************************************************/
+
+	static function createBackgroundCallCmd($tUrl=array(),$tTime=array()) {
+		if (!is_array($tUrl) || count($tUrl)<1)
+			return false;
+		if (!is_array($tTime) || count($tTime)<1)
+			return false;
+		$cmd=array();
+		$cmd['COMMAND']['name']='BackgroundCall';
+		$cmd['COMMAND']['param']['url'] = array();
+		$cmd['COMMAND']['param']['time'] = array();
+		$k=0;
+		foreach($tUrl as $key=>$url) {
+			$cmd['COMMAND']['param']['url'][$k]=$url;
+			$cmd['COMMAND']['param']['time'][$k]=$tTime[$key];
+			$k++;
+		}
+	
+		return $cmd;
+	}
+
 
 	
 	/*************************************************
