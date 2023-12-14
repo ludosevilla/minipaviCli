@@ -6,6 +6,7 @@
 ****                                            ****  
 ****    L'ensemble des fichiers peuvent être    ****  
 ****         modifiés, distribués etc !         ****  
+****             Licence GNU GPL                ****  
 ****************************************************  
 
 # Informations
