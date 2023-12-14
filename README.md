@@ -25,7 +25,7 @@ Les scripts de mini-services MiniChat, France24 et SNCF sont fournis à titrre d
 - **MiniChat**  
   - index.php: script du service  
   - MiniChat.vdt: Page videotex du service  
-  - miniChatFunctions: script du service  
+  - miniChatFunctions: fonctions générales utilisées par le script  
   - animGPT.php : fonctions utilisées par le script pour l'interfaçage avec ChatGPT 
 
   Remarque: L'interfaçage avec chatGPT, désactivable, nécessite une clé ChatGPT à obtenir sur le site de CharGPT
