@@ -21,15 +21,19 @@ Les scripts de mini-services MiniChat, France24 et SNCF sont fournis à titrre d
 - MiniPaviCli.php: Classe pour communiquer avec la psserelle MiniPavi  
 - README.md: Ce fichier  
 
-- **France24**  
-  - FRANCE24.VDT: Page videotex d'accueil du service  
-  - france24Functions.php: Fonctions utilisée dans le script du service  
-  - index.php: script du service  
-
 - **MiniChat**  
   - index.php: script du service  
   - MiniChat.vdt: Page videotex du service  
   - miniChatFunctions: script du service  
+  - animGPT.php : fonctions utilisées par le script pour l'interfaçage avec ChatGPT 
+
+  Remarque: L'interfaçage avec chatGPT, désactivable, nécessite une clé ChatGPT à obtenir sur le site de CharGPT
+  Disponible sur https://openai.com/product
+  
+- **France24**  
+  - FRANCE24.VDT: Page videotex d'accueil du service  
+  - france24Functions.php: Fonctions utilisée dans le script du service  
+  - index.php: script du service  
 
 - **MiniSncf**  
   - index.php: script du service  
