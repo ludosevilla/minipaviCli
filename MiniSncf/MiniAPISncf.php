@@ -23,7 +23,7 @@ class MiniAPISncf {
 	/******************************/
 	
 	static function GetGares($search) {
-
+		$search=preg_replace("/'/","\\'",$search);
 		$search = urlencode($search);
 		$urlToCall = "https://ressources.data.sncf.com/api/explore/v2.1/catalog/datasets/referentiel-gares-voyageurs/records?select=gare_alias_libelle_noncontraint%2C%20code_gare%2Cuic_code&where=suggest(gare_alias_libelle_noncontraint,'$search')&group_by=code_gare%2Calias_libelle_noncontraint%2C%20uic_code&order_by=alias_libelle_noncontraint&limit=99";
 		
@@ -122,6 +122,9 @@ class MiniAPISncf {
 		
 		foreach($tUIC as $uicCode) {
 			$urlToCall = "https://api.sncf.com/v1/coverage/sncf/stop_areas/stop_area:SNCF:$uicCode/departures?data_freshness=realtime";
+			
+			
+			
 			$ch = curl_init( $urlToCall );
 			curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
 			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10); 
