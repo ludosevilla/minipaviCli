@@ -294,7 +294,7 @@ try {
 				$vdt.=MiniPavi\MiniPaviCli::setPos(1,2).VDT_TXTYELLOW.VDT_BGBLUE.VDT_SZDBLH.' Le Dialogue en Direct !'.VDT_CLRLN;
 				$vdt.=MiniPavi\MiniPaviCli::setPos(1,4).VDT_TXTBLACK.VDT_BGGREEN.VDT_SZNORM.' Num.|    Pseudo|CV'.VDT_CLRLN.VDT_TXTWHITE; 
 				$vdt.=MiniPavi\MiniPaviCli::setPos(1,21).VDT_BGBLUE.' '.VDT_CLRLN;
-				$vdt.=VDT_CRLF.VDT_TXTWHITE.VDT_BGBLACK.MiniPavi\MiniPaviCli::toG2('Ecrire : numéro .. +').VDT_STARTUNDERLINE.' '.VDT_TXTGREEN.VDT_FDINV.' Envoi '.VDT_FDNORM.VDT_STOPUNDERLINE.VDT_TXTWHITE;
+				$vdt.=VDT_CRLF.VDT_TXTWHITE.VDT_BGBLACK.MiniPavi\MiniPaviCli::toG2('Ecrire : numéro .. +').VDT_STARTUNDERLINE.' '.VDT_TXTGREEN.VDT_FDINV.' Envoi '.VDT_FDNORM.VDT_STOPUNDERLINE.VDT_TXTBLUE.' G=ChatGPT'.VDT_TXTWHITE;
 				$vdt.=VDT_CRLF.VDT_TXTWHITE.'Lire vos messages   '.VDT_STARTUNDERLINE.' '.VDT_TXTGREEN.VDT_FDINV.' Envoi '.VDT_FDNORM.VDT_STOPUNDERLINE.VDT_TXTWHITE.VDT_BGBLACK;
 				$vdt.=VDT_CRLF.VDT_TXTWHITE.'Pages'.VDT_STARTUNDERLINE.' '.VDT_TXTGREEN.VDT_FDINV.' Suite '.VDT_FDNORM.VDT_STOPUNDERLINE.VDT_TXTWHITE.VDT_BGBLACK;				
 				$vdt.=VDT_STARTUNDERLINE.' '.VDT_TXTGREEN.VDT_FDINV.' Retour '.VDT_FDNORM.VDT_STOPUNDERLINE.VDT_TXTWHITE;								
@@ -341,8 +341,12 @@ try {
 					$i = key($tCnx);
 					if ($cnx['id'] == MiniPavi\MiniPaviCli::$uniqueId)
 						$vdt.=MiniPavi\MiniPaviCli::setPos(1,5+$j).VDT_TXTWHITE.MiniPavi\MiniPaviCli::toG2(sprintf('%5d',($i+1))).'|'.VDT_TXTRED.MiniPavi\MiniPaviCli::toG2(sprintf('%10s',ucfirst(strtolower($cnx['name'])))).VDT_TXTWHITE.'|'.VDT_TXTMAGENTA.MiniPavi\MiniPaviCli::toG2(ucfirst(strtolower(sprintf('%-22s',$cnx['cv'])))).VDT_CLRLN;
-					else
-						$vdt.=MiniPavi\MiniPaviCli::setPos(1,5+$j).VDT_TXTWHITE.MiniPavi\MiniPaviCli::toG2(sprintf('%5d',($i+1))).'|'.MiniPavi\MiniPaviCli::toG2(sprintf('%10s',ucfirst(strtolower($cnx['name'])))).'|'.VDT_TXTMAGENTA.MiniPavi\MiniPaviCli::toG2(ucfirst(strtolower(sprintf('%-22s',$cnx['cv'])))).VDT_CLRLN;
+					else {
+						if ($cnx['type'] == MCHAT_TYPE_CGPT)
+							$vdt.=MiniPavi\MiniPaviCli::setPos(1,5+$j).VDT_TXTBLUE.'G '.VDT_TXTWHITE.MiniPavi\MiniPaviCli::toG2(sprintf('%3d',($i+1))).'|'.MiniPavi\MiniPaviCli::toG2(sprintf('%10s',ucfirst(strtolower($cnx['name'])))).'|'.VDT_TXTMAGENTA.MiniPavi\MiniPaviCli::toG2(ucfirst(strtolower(sprintf('%-22s',$cnx['cv'])))).VDT_CLRLN;
+						else
+							$vdt.=MiniPavi\MiniPaviCli::setPos(1,5+$j).VDT_TXTWHITE.MiniPavi\MiniPaviCli::toG2(sprintf('%5d',($i+1))).'|'.MiniPavi\MiniPaviCli::toG2(sprintf('%10s',ucfirst(strtolower($cnx['name'])))).'|'.VDT_TXTMAGENTA.MiniPavi\MiniPaviCli::toG2(ucfirst(strtolower(sprintf('%-22s',$cnx['cv'])))).VDT_CLRLN;							
+					}
 					$j++;
 					next($tCnx);
 					if ($j==MINICHAT_NUMPARPAGE) {
@@ -630,7 +634,7 @@ try {
 	// Url à appeller lors de la prochaine saisie utilisateur (ou sans attendre si directCall=true)
 
 	$nextPage=$prot."://".$_SERVER['HTTP_HOST']."".$_SERVER['PHP_SELF'].'?step='.$step;
-
+//mail("ludojoey@astroz.com","envoi",print_r($cmd,true));
 	// On envoi tout cela à la passerelle
 	MiniPavi\MiniPaviCli::send($vdt,$nextPage,serialize($context),true,$cmd,$directCall);
 	
