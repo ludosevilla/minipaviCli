@@ -73,7 +73,7 @@ define('MSK_ENVOI', 128);
 class MiniPaviCli {
 	
 	static public $uniqueId='';		// Identifiant unique de la connexion
-	static public $remoteAddr='';	// IP de l'utilisateur
+	static public $remoteAddr='';	// IP de l'utilisateur ou "CALLFROM xxxx" (xxx = numéro tel) si accès par téléphone
 	static public $content=array();	// Contenu saisi
 	static public $fctn='';			// Touche de fonction utilisée (ou CNX ou FIN)
 	static public $urlParams='';	// Paramètres fournis lors de l'appel à l'url du service
@@ -336,7 +336,7 @@ class MiniPaviCli {
 	**************************************************/	
 	
 	static function writeCentered($line,$text,$attr='') {
-		$vdt = self::setPos(ceil((40-mb_strlen($text)))/2,$line);
+		$vdt = self::setPos(ceil((40-mb_strlen($text))/2),$line);
 		$vdt.= $attr.self::toG2($text);
 		return $vdt;
 	}
