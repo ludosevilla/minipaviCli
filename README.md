@@ -17,11 +17,11 @@ MiniPaviCli.php est la classe pour s'interfacer avec la passerelle.
 
 Plus d'info sur http://www.minipavi.fr
 
-Les scripts de mini-services MiniChat, France24 et SNCF sont fournis à titrre d'exemple.
+Les scripts de mini-services MiniChat, France24 et SNCF sont fournis à titre d'exemple.
 
 # Contenu
 
-- MiniPaviCli.php: Classe pour communiquer avec la psserelle MiniPavi  
+- MiniPaviCli.php: Classe pour communiquer avec la passerelle MiniPavi  
 - README.md: Ce fichier  
 
 - **MiniChat**  
@@ -35,7 +35,7 @@ Les scripts de mini-services MiniChat, France24 et SNCF sont fournis à titrre d
   
 - **France24**  
   - FRANCE24.VDT: Page videotex d'accueil du service  
-  - france24Functions.php: Fonctions utilisée dans le script du service  
+  - france24Functions.php: Fonctions utilisées dans le script du service  
   - index.php: script du service  
 
 - **MiniSncf**  
@@ -46,23 +46,24 @@ Les scripts de mini-services MiniChat, France24 et SNCF sont fournis à titrre d
   
   Remarque: vous devez indiquer une clé pour l'API Sncf dans le fichier MiniAPISncf.php  
   Disponible sur https://numerique.sncf.com/startup/api/
-  
-  
+
 # Pré-requis
 
 Serveur Web + PHP (les scripts ont été testés avec PHP8.2 et 7.3)
 
 # Installation rapide d'un service
-- Copier dans un repertoire accessible les fichiers d'un service +  MiniPaviCli.php
+
+- Copier dans un repertoire accessible les fichiers d'un service + MiniPaviCli.php
 - Modifier le fichier index.php pour que le chemin vers MiniPaviCli.php soit correct
 
 Voilà, terminé.
 
-Si le dossier de votre installation est acessible par exemple via l'url:
+Si le dossier de votre installation est accessible par exemple via l'url:
 http://www.monsite.fr/test/
 
 alors, le service installé est accessible par websocket à l'url:
 ws://go.minipavi.fr:8182/url=http://www.monsite.fr/test/
 
-Vous pouvez utiliser, par exemple, l'emulateur Minitel (de MiEdit) disponible sur www.minipavi.fr pour y accéder
+Vous pouvez utiliser, par exemple, l'émulateur Minitel (de MiEdit) disponible sur www.minipavi.fr pour y accéder.
 
+La librairie est aussi installable via composer: `composer require ludosevilla/minipavi-cli`.

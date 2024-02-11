@@ -1,0 +1,22 @@
+{
+  "name": "ludosevilla/minipavi-cli",
+  "type": "library",
+  "description": "SDK for MiniPavi, Minitel to HTTP platform",
+  "keywords": ["minitel"],
+  "homepage": "https://www.minipavi.fr/",
+  "license": "GPL-2.0-or-later",
+  "authors": [
+    {
+      "name": "Jean-arthur Silve",
+      "email": "contact@minipavi.fr"
+    }
+  ],
+  "require": {
+    "php": ">=7.3"
+  },
+  "autoload": {
+    "psr-4": {
+      "MiniPavi\\": ""
+    }
+  }
+}
