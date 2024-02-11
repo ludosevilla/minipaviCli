@@ -6,6 +6,8 @@
  *
  * Communication avec la passerelle MiniPavi
  *
+ * 11/02/2024 : Redirection vers émulateur Minitel si appel direct depuis un navigateur
+ *
  */
  
 namespace MiniPavi;
@@ -86,7 +88,9 @@ class MiniPaviCli {
 	
 	static function start() {
 		if (strpos(@$_SERVER['HTTP_USER_AGENT'],'MiniPAVI') === false) {
-			echo "<!DOCTYPE html><head></head><body><h2>Cette page ne peut être appellée que via la psserelle MiniPAVI<br/><br/>This page can only be reached using the MiniPAVI gateway.</h2><hr/></body>";
+			$currentUrl = (empty($_SERVER['HTTPS']) ? 'http' : 'https') . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+			$redirectUrl = 'http://www.minipavi.fr/emulminitel/indexws.php?url='.urlencode('wss://go.minipavi.fr:8181?url='.$currentUrl);
+			header("Location: $redirectUrl");
 			exit;
 		}
 		$rawPostData = file_get_contents("php://input");
