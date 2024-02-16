@@ -57,16 +57,16 @@ Les scripts de mini-services MiniChat, France24, SNCF, XMLint sont fournis à ti
 - **XMLint**  
   XMLint est un interpreteur XML permettant la réalisation de service Minitel sans programmation.
   
-  - index.php: script du service  
-  - XMLfunctions.php: Fonctions utilisées dans le script du service 
+  - index.php: script du service
+  - XMLfunctions.php: Fonctions utilisées dans le script du service
   - fond.vdt: page videotex utilisée par le script du service
   
   Fichiers de démonstration:
   
   - demo.xml: exemple de fichier XML décrivant un service Minitel
   - moto.vdt: page videotex utilisée pour le service défini dans "demo.xml"
-  - pirate.vdt: page videotex utilisée pour le service défini dans "demo.xml"  
-  - salut.vdt: page videotex utilisée pour le service défini dans "demo.xml"  
+  - pirate.vdt: page videotex utilisée pour le service défini dans "demo.xml"
+  - salut.vdt: page videotex utilisée pour le service défini dans "demo.xml" 
   
   - XMLint-doc.pdf: documentation concernant la réalisation de services Minitel par fichier XML
   
