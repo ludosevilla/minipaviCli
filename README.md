@@ -55,7 +55,7 @@ Les scripts de mini-services MiniChat, France24, SNCF, XMLint sont fournis à ti
   Disponible sur https://numerique.sncf.com/startup/api/
   
 - **XMLint**  
-  XMLint est un interpreteur XML permettant la réalisation de service Minitel sans programmation.
+  XMLint est un interpreteur XML permettant la réalisation de services Minitel simples sans programmation.
   
   - index.php: script du service
   - XMLfunctions.php: Fonctions utilisées dans le script du service
