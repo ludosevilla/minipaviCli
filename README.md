@@ -68,6 +68,7 @@ Les scripts de mini-services MiniChat, France24, SNCF, XMLint sont fournis à ti
   - pirate.vdt: page videotex utilisée pour le service défini dans "demo.xml"
   - salut.vdt: page videotex utilisée pour le service défini dans "demo.xml" 
   
+  
   - XMLint-doc.pdf: documentation concernant la réalisation de services Minitel par fichier XML
   
 
