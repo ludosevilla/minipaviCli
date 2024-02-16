@@ -17,7 +17,7 @@ MiniPaviCli.php est la classe pour s'interfacer avec la passerelle.
 
 Plus d'info sur http://www.minipavi.fr
 
-Les scripts de mini-services MiniChat, France24 et SNCF sont fournis à titre d'exemple.
+Les scripts de mini-services MiniChat, France24, SNCF, XMLint sont fournis à titre d'exemple.
 
 # Contenu
 
