@@ -70,7 +70,14 @@ Les scripts de mini-services MiniChat, France24, SNCF, XMLint sont fournis à ti
   
   
   - XMLint-doc.pdf: documentation concernant la réalisation de services Minitel par fichier XML
+
+- **MiniMeteo**  
+  MiniMeteo permet de connaître les prévisions météorologiques mondiales et la qualité de l'air (Europe)
   
+  - index.php: script du service  
+  - MiniMeteo.php: Récupereration des prévisions sur Open-Meteo
+  - meteoacc.vdt et meteofondpage.vdt : fichiers videotex de l'accueil et page interne 
+  - Dossier 'icones': contient les icones videotex des prévisions
 
 # Pré-requis
 
