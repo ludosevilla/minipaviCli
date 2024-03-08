@@ -6,7 +6,9 @@
  *
  * Communication avec la passerelle MiniPavi
  *
+ * 22/01/2024 : Renvoi du numéro de l'appellant si connexion depuis RTC/VoIP
  * 11/02/2024 : Redirection vers émulateur Minitel si appel direct depuis un navigateur
+ * 08/03/2024 : Modifications concernant la converstions des caractères spéciaux
  *
  */
  
@@ -121,6 +123,7 @@ class MiniPaviCli {
 	**************************************************/
 	
 	static function send($content,$next,$context='',$echo=true,$cmd=null,$directCall=false) {
+		$content = mb_convert_encoding($content,'7bit');
 		$rep['version']=VERSION;
 		$rep['content']=@base64_encode($content);
 		$rep['context']=mb_convert_encoding(mb_substr($context,0,65000),'UTF-8');
@@ -350,12 +353,12 @@ class MiniPaviCli {
 	**************************************************/
 
 	static function toG2($str) {
-		$str=mb_ereg_replace("’","'", $str);
+		
 		$str=preg_replace('/[\x00-\x1F\x81\x8D\x8F\x90\x9D]/', ' ', $str);
-
-		$tabAcc=array('/é/','/è/','/à/','/ç/','/ê/','/É/','/È/','/À/','/Ç/','/Ê/',
-		'/β/','/ß/','/œ/','/Œ/','/ü/','/û/','/ú/','/ù/','/ö/','/ô/','/ó/','/ò/','/ï/','/î/','/í/','/ì/','/ë/','/ä/',
-		'/â/','/á/','/£/','/°/','/±/','/←/','/↑/','/→/','/↓/','/¼/','/½/','/¾/','/Â/');
+		
+		$tabAcc=array('é','è','à','ç','ê','É','È','À','Ç','Ê',
+		'β','ß','œ','Œ','ü','û','ú','ù','ö','ô','ó','ò','ï','î','í','ì','ë','ä',
+		'â','á','£','°','±','←','↑','→','↓','¼','½','¾','Â','Î','ō','á','’',' ','ň','ć','ř','ý','š','í','ą');
 		
 		$tabG2=array(VDT_G2.chr(0x42).'e',
 		VDT_G2.chr(0x41).'e',
@@ -397,10 +400,14 @@ class MiniPaviCli {
 		VDT_G2.chr(0x3C),		
 		VDT_G2.chr(0x3D),		
 		VDT_G2.chr(0x3E),
-		VDT_G2.chr(0x43).'A'
+		VDT_G2.chr(0x43).'A',
+		'I','o','a',"'",' ','n','c','r','y','s','i','a'
 		);
 		
-		return preg_replace($tabAcc, $tabG2, $str);	
+		foreach($tabAcc as $k=>$c) {
+			$str=mb_ereg_replace($c,$tabG2[$k], $str);
+		}
+		return $str;
 	}
 	
 }
