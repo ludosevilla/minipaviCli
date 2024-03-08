@@ -4,8 +4,8 @@
  * @author Jean-arthur SILVE <contact@minipavi.fr>
  * @version 1.0 Mars 2024
  *
- * Script Meteo
- * A des fins de démonstration
+ * Script Meteo pour service compatible MiniPavi
+ * 
  * 
  */
 
