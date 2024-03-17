@@ -310,9 +310,10 @@ class MiniPaviCli {
 	// number: numéro d'appel
 	// RX: Force minimale du signal en réception (dB)
 	// RX: Force du signal en émission (dB)
+	// key: Clé d'autorisation pour appel sortants
 	**************************************************/
 
-	static function createConnectToExtCmd($number,$RX=-35,$TX=-18) {
+	static function createConnectToExtCmd($number,$RX=-35,$TX=-18,$key='') {
 		$number = trim($number);
 		if ($number == '')
 			return false;
@@ -320,9 +321,9 @@ class MiniPaviCli {
 		$cmd=array();
 		$cmd['COMMAND']['name']='connectToExt';
 		$cmd['COMMAND']['param']['number'] = $number;
+		$cmd['COMMAND']['param']['key'] = $key;
 		$cmd['COMMAND']['param']['RX'] = (int)$RX;
 		$cmd['COMMAND']['param']['TX'] = (int)$TX;
-	
 		return $cmd;
 	}
 
