@@ -19,7 +19,7 @@ ini_set('display_errors',0);
 try {
 	MiniPavi\MiniPaviCli::start();
 
-	if (MiniPavi\MiniPaviCli::$fctn == 'CNX') {
+	if (MiniPavi\MiniPaviCli::$fctn == 'CNX' || MiniPavi\MiniPaviCli::$fctn == 'DIRECTCNX') {
 		// Initialisation
 		$step = 0;
 		$context = array();
