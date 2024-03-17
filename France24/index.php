@@ -19,7 +19,7 @@ ini_set('display_errors',0);
 try {
 	MiniPavi\MiniPaviCli::start();
 
-	if (MiniPavi\MiniPaviCli::$fctn == 'CNX') {
+	if (MiniPavi\MiniPaviCli::$fctn == 'CNX' || MiniPavi\MiniPaviCli::$fctn == 'DIRECTCNX') {
 		// Initialisation
 		$step = 0;
 		$context = array();
@@ -47,11 +47,11 @@ try {
 			case 0:
 				// Accueil
 				$vdt = MiniPavi\MiniPaviCli::clearScreen().PRO_MIN.PRO_LOCALECHO_OFF;
-				$vdt.= file_get_contents('FRANCE24.VDT');
+				$vdt.= file_get_contents('france24-2.vdt');
 				$vdt.=MiniPavi\MiniPaviCli::setPos(21,8);
-				$vdt.=VDT_G0.VDT_TXTYELLOW.VDT_BGBLUE.VDT_SZDBLH.VDT_BLINK." Service de";
+				$vdt.=VDT_G0.VDT_TXTYELLOW.VDT_BGBLUE.VDT_SZDBLH.VDT_BLINK." Les nouvelles de";
 				$vdt.=MiniPavi\MiniPaviCli::setPos(21,10);
-				$vdt.=VDT_G0.VDT_TXTYELLOW.VDT_BGBLUE.VDT_SZDBLH.VDT_BLINK.MiniPavi\MiniPaviCli::toG2(" démonstration");
+				$vdt.=VDT_G0.VDT_TXTYELLOW.VDT_BGBLUE.VDT_SZDBLH.VDT_BLINK.MiniPavi\MiniPaviCli::toG2(" la planète!");
 				
 				$vdt.=MiniPavi\MiniPaviCli::setPos(1,24);
 				$vdt.=VDT_G0.VDT_TXTWHITE.VDT_BGBLACK.MiniPavi\MiniPaviCli::toG2(" Pour lire les dépêches, tapez ").VDT_FDINV." Suite ".VDT_FDNORM.VDT_CLRLN;
