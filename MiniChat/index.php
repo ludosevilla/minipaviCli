@@ -119,7 +119,7 @@ try {
 		}
 	}
 	
-	if (MiniPavi\MiniPaviCli::$fctn == 'CNX') {
+	if (MiniPavi\MiniPaviCli::$fctn == 'CNX' || MiniPavi\MiniPaviCli::$fctn == 'DIRECTCNX') {
 		// Nouvelle connexion
 		$step = 0;
 		$context = array();
@@ -190,6 +190,10 @@ try {
 				// Accueil: affichage partie fixe
 				$vdt = MiniPavi\MiniPaviCli::clearScreen().PRO_MIN.PRO_LOCALECHO_OFF;
 				$vdt.= file_get_contents('MiniChatAcc.vdt');
+				
+				$vdt.= MiniPavi\MiniPaviCli::setPos(12,9);
+				$vdt.= VDT_BGBLUE.' '.MiniPavi\MiniPaviCli::toG2('www.minipavi.fr');
+				
 				
 				$vdt.=MiniPavi\MiniPaviCli::setPos(7,15);
 				$vdt.=VDT_TXTYELLOW.VDT_FDINV.VDT_BLINK.MiniPavi\MiniPaviCli::toG2('> Service animé par ChatGPT <');
