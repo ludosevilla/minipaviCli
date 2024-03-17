@@ -121,7 +121,9 @@ class MiniPaviCli {
 	// echo: active l'echo
 	// commande: envoi une commande à MiniPavi
 	// directcall: appel directement la prochaine url sans attendre une action utilisateur (limité à 2 utilisations consécutives)
-	//				peut avoir la valeur 'directcnx' ou 'direct' (si true, équivaut à 'direct', pour compatibilité)
+	//				peut avoir la valeur 'yes-cnx' ou 'yes' (si true, équivaut à 'yes', pour compatibilité)
+	//				Si 'yes' (ou true): la fonction envoyée au script sera 'DIRECT'
+	//				Si 'yes-cnx': la fonction envoyée au script sera 'DIRECTCNX' et devra être traité comme une nouvelle connexion par le script
 	**************************************************/
 	
 	static function send($content,$next,$context='',$echo=true,$cmd=null,$directCall=false) {
