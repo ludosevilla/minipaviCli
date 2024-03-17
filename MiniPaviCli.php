@@ -9,6 +9,7 @@
  * 22/01/2024 : Renvoi du numéro de l'appellant si connexion depuis RTC/VoIP
  * 11/02/2024 : Redirection vers émulateur Minitel si appel direct depuis un navigateur
  * 08/03/2024 : Modifications concernant la converstions des caractères spéciaux
+ * 16/03/2024 : Modifications concernant l'appel direct d'une url (ajout DIRECTCNX)
  *
  */
  
@@ -119,7 +120,8 @@ class MiniPaviCli {
 	// next: prochaine url à être appellée après saisie de l'utilisateur (ou déconnexion)
 	// echo: active l'echo
 	// commande: envoi une commande à MiniPavi
-	// directcall: appel directement la prochaine url sans attendre une action utilisateur (limité à 1 utilisation à la fois)
+	// directcall: appel directement la prochaine url sans attendre une action utilisateur (limité à 2 utilisations consécutives)
+	//				peut avoir la valeur 'directcnx' ou 'direct' (si true, équivaut à 'direct', pour compatibilité)
 	**************************************************/
 	
 	static function send($content,$next,$context='',$echo=true,$cmd=null,$directCall=false) {
@@ -129,8 +131,14 @@ class MiniPaviCli {
 		$rep['context']=mb_convert_encoding(mb_substr($context,0,65000),'UTF-8');
 		if ($echo)	$rep['echo']='on';
 		else $rep['echo']='off';
-		if ($directCall)	$rep['directcall']='yes';
-		else $rep['directcall']='no';
+		$rep['directcall']='no';
+		if ($directCall !== false && $directCall !== 'no') {
+			if ($directCall === 'yes-cnx')
+				$rep['directcall']='yes-cnx';
+			else
+				$rep['directcall']='yes';
+		}
+		
 		
 		$rep['next']=$next;
 		
@@ -294,6 +302,27 @@ class MiniPaviCli {
 		return $cmd;
 	}
 
+	/*************************************************
+	// Demande la connexion au serveur RTC
+	// accessible au numéro indiqué
+	// number: numéro d'appel
+	// RX: Force minimale du signal en réception (dB)
+	// RX: Force du signal en émission (dB)
+	**************************************************/
+
+	static function createConnectToExtCmd($number,$RX=-35,$TX=-18) {
+		$number = trim($number);
+		if ($number == '')
+			return false;
+		
+		$cmd=array();
+		$cmd['COMMAND']['name']='connectToExt';
+		$cmd['COMMAND']['param']['number'] = $number;
+		$cmd['COMMAND']['param']['RX'] = (int)$RX;
+		$cmd['COMMAND']['param']['TX'] = (int)$TX;
+	
+		return $cmd;
+	}
 
 	
 	/*************************************************
