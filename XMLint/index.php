@@ -27,7 +27,7 @@ $directCall = false;
 try {
 	MiniPavi\MiniPaviCli::start();
 
-	if (MiniPavi\MiniPaviCli::$fctn == 'CNX' || MiniPavi\MiniPaviCli::$fctn == 'DIRECT') {
+	if (MiniPavi\MiniPaviCli::$fctn == 'CNX' || MiniPavi\MiniPaviCli::$fctn == 'DIRECTCNX') {
 		// Initialisation
 
 		$step = 0;
