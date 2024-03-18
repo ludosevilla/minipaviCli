@@ -266,8 +266,21 @@ try {
 					$l = 5;
 					foreach($tRes as $info) {
 						if ($context['vue'] == 'departs') {
-							$vdt.=MiniPavi\MiniPaviCli::setPos(1,$l).VDT_BGBLUE.VDT_TXTYELLOW.' '.MiniPavi\MiniPaviCli::toG2($info['commercial_mode'].' '.$info['trip_short_name']).VDT_CLRLN;
+							//$vdt.=MiniPavi\MiniPaviCli::setPos(1,$l).VDT_BGBLUE.VDT_TXTYELLOW.' '.MiniPavi\MiniPaviCli::toG2($info['commercial_mode'].' '.$info['trip_short_name']).VDT_CLRLN;
+							
+							$vdt.=MiniPavi\MiniPaviCli::setPos(1,$l).VDT_BGBLUE.VDT_TXTYELLOW.' '.MiniPavi\MiniPaviCli::toG2($info['commercial_mode'].' '.$info['trip_short_name']);
+							$lReste = 39 - (mb_strlen($info['commercial_mode'])+mb_strlen($info['trip_short_name'])+2);
+							if ($lReste>0) {
+								$route = substr($info['direction'],0,$lReste);
+								$vdt.=' '.VDT_TXTCYAN.MiniPavi\MiniPaviCli::toG2($route);
+							}
+							$vdt.=VDT_CLRLN;
+
+							
 							$vdt.=MiniPavi\MiniPaviCli::setPos(1,$l+1).VDT_TXTWHITE.MiniPavi\MiniPaviCli::toG2(mb_substr($info['direction2'],0,40)).VDT_CLRLN;
+							
+
+							
 							if ($info['base_departure_date_time'] != $info['departure_date_time']) 
 								$vdt.=MiniPavi\MiniPaviCli::setPos(1,$l+2).VDT_TXTYELLOW.MiniPavi\MiniPaviCli::toG2('Prévu ').$info['base_departure_date_time'].VDT_TXTWHITE.VDT_BLINK.' RETARDE '.VDT_FIXED.$info['departure_date_time'].VDT_CLRLN;
 							else
@@ -276,7 +289,19 @@ try {
 							if ($l>22)
 								break;
 						} else {
-							$vdt.=MiniPavi\MiniPaviCli::setPos(1,$l).VDT_BGBLUE.VDT_TXTYELLOW.' '.MiniPavi\MiniPaviCli::toG2($info['commercial_mode'].' '.$info['trip_short_name']).VDT_CLRLN;
+							//$vdt.=MiniPavi\MiniPaviCli::setPos(1,$l).VDT_BGBLUE.VDT_TXTYELLOW.' '.MiniPavi\MiniPaviCli::toG2($info['commercial_mode'].' '.$info['trip_short_name']).VDT_CLRLN;
+							
+							$vdt.=MiniPavi\MiniPaviCli::setPos(1,$l).VDT_BGBLUE.VDT_TXTYELLOW.' '.MiniPavi\MiniPaviCli::toG2($info['commercial_mode'].' '.$info['trip_short_name']);
+
+
+							$lReste = 39 - (mb_strlen($info['commercial_mode'])+mb_strlen($info['trip_short_name'])+2);
+							if ($lReste>0) {
+								$route = substr($info['direction'],0,$lReste);
+								$vdt.=' '.VDT_TXTCYAN.MiniPavi\MiniPaviCli::toG2($route);
+							}
+							$vdt.=VDT_CLRLN;
+							
+							
 							$vdt.=MiniPavi\MiniPaviCli::setPos(1,$l+1).VDT_TXTWHITE.MiniPavi\MiniPaviCli::toG2(mb_substr($info['direction2'],0,40)).VDT_CLRLN;
 							if ($info['base_arrival_date_time'] != $info['arrival_date_time']) 
 								$vdt.=MiniPavi\MiniPaviCli::setPos(1,$l+2).VDT_TXTYELLOW.MiniPavi\MiniPaviCli::toG2('Prévu ').$info['base_arrival_date_time'].VDT_TXTWHITE.VDT_BLINK.' RETARDE '.VDT_FIXED.$info['arrival_date_time'].VDT_CLRLN;

@@ -98,6 +98,10 @@ class MiniAPISncf {
 				} else {
 					$tArrivals[$numArr]['base_arrival_date_time']=$tArrivals[$numArr]['arrival_date_time'];
 				}
+				
+				if (strpos(@$departure['route']['direction']['id'],$uicCode)!==false) {
+						$tArrivals[$numArr]['direction2']='TERMINUS';
+				}
 				$numArr++;
 			}
 			
