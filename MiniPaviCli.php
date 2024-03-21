@@ -6,10 +6,12 @@
  *
  * Communication avec la passerelle MiniPavi
  *
+ * License GPL v2 ou supérieure
+ *
  * 22/01/2024 : Renvoi du numéro de l'appellant si connexion depuis RTC/VoIP
  * 11/02/2024 : Redirection vers émulateur Minitel si appel direct depuis un navigateur
  * 08/03/2024 : Modifications concernant la converstions des caractères spéciaux
- * 16/03/2024 : Modifications concernant l'appel direct d'une url (ajout DIRECTCNX)
+ * 16/03/2024 : Modifications concernant l'appel direct d'une url (ajout DIRECTCNX) et ajout des commandes createConnectToExtCmd et createConnectToTlnCmd
  *
  */
  
@@ -62,6 +64,8 @@ define('PRO_MIN',chr(0x1B).chr(0x3A).chr(0x69).chr(0x45));
 define('PRO_MAJ',chr(0x1B).chr(0x3A).chr(0x6A).chr(0x45));
 define('PRO_LOCALECHO_OFF',chr(0x1B).chr(0x3B).chr(0x60).chr(0x58).chr(0x51));
 define('PRO_LOCALECHO_ON',chr(0x1B).chr(0x3B).chr(0x61).chr(0x58).chr(0x51));
+define('PRO_ROULEAU_ON', chr(0x1B).chr(0x3A).chr(0x69).chr(0x43));
+define('PRO_ROULEAU_OFF', chr(0x1B).chr(0x3A).chr(0x6A).chr(0x43));
 
 
 // Touche de fonctione acceptables pour une saisie utilisateur
@@ -92,6 +96,7 @@ class MiniPaviCli {
 	static function start() {
 		if (strpos(@$_SERVER['HTTP_USER_AGENT'],'MiniPAVI') === false) {
 			$currentUrl = (empty($_SERVER['HTTPS']) ? 'http' : 'https') . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+			$currentUrl = urlencode($currentUrl);
 			$redirectUrl = 'http://www.minipavi.fr/emulminitel/indexws.php?url='.urlencode('wss://go.minipavi.fr:8181?url='.$currentUrl);
 			header("Location: $redirectUrl");
 			exit;
@@ -118,7 +123,7 @@ class MiniPaviCli {
 	// Envoi des données à MiniPavi 
 	// content: contenu de la page vdt
 	// next: prochaine url à être appellée après saisie de l'utilisateur (ou déconnexion)
-	// echo: active l'echo
+	// echo: active l'echo (true ou false)
 	// commande: envoi une commande à MiniPavi
 	// directcall: appel directement la prochaine url sans attendre une action utilisateur (limité à 2 utilisations consécutives)
 	//				peut avoir la valeur 'yes-cnx' ou 'yes' (si true, équivaut à 'yes', pour compatibilité)
@@ -134,7 +139,7 @@ class MiniPaviCli {
 		if ($echo)	$rep['echo']='on';
 		else $rep['echo']='off';
 		$rep['directcall']='no';
-		if ($directCall !== false && $directCall !== 'no') {
+		if ($directCall !== false && $directCall !== 'no' && $directCall !== '') {
 			if ($directCall === 'yes-cnx')
 				$rep['directcall']='yes-cnx';
 			else
@@ -309,7 +314,7 @@ class MiniPaviCli {
 	// accessible au numéro indiqué
 	// number: numéro d'appel
 	// RX: Force minimale du signal en réception (dB)
-	// RX: Force du signal en émission (dB)
+	// TX: Force du signal en émission (dB)
 	// key: Clé d'autorisation pour appel sortants
 	**************************************************/
 
@@ -326,6 +331,27 @@ class MiniPaviCli {
 		$cmd['COMMAND']['param']['TX'] = (int)$TX;
 		return $cmd;
 	}
+
+
+	/*************************************************
+	// Demande la connexion a un serveur par telnet
+	// à l'adresse indiquée
+	// host: adresse ex: 1.2.3.4:23
+	// key: Clé d'autorisation pour connexions sortantes
+	**************************************************/
+
+	static function createConnectToTlnCmd($host,$key='') {
+		$host = trim($host);
+		if ($host == '')
+			return false;
+		
+		$cmd=array();
+		$cmd['COMMAND']['name']='connectToTln';
+		$cmd['COMMAND']['param']['host'] = $host;
+		$cmd['COMMAND']['param']['key'] = $key;
+		return $cmd;
+	}
+
 
 	
 	/*************************************************
