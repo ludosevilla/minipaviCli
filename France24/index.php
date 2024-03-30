@@ -160,7 +160,7 @@ try {
 				
 				$context['tnews']=$tNews;
 				$context['title']=$urlFlux[$choix-1]['name'];
-				
+				$context['page']=0;
 				
 			case 25:
 				// Affichage des titres d'un thème donné, zone fixe
@@ -171,7 +171,7 @@ try {
 				$vdt.=VDT_TXTRED.VDT_FDINV." Lire une news:  +".VDT_FDNORM." Envoi ".VDT_FDINV.' ou '.VDT_FDNORM." Sommaire ".VDT_FDINV.VDT_CLRLN;
 				
 				$context['currnews']=0;
-				$context['page']=0;
+				
 				
 			case 26:
 				// Affichage des titres (5 maximum), zone variable
@@ -249,8 +249,15 @@ try {
 				$vdt.=VDT_CUROFF;
 				$vdt.=MiniPavi\MiniPaviCli::setPos(1,4);
 				$vdt.=VDT_TXTWHITE.VDT_SZDBLH.MiniPavi\MiniPaviCli::toG2(substr($context['tnews'][$context['currnews']]['titre'],0,40)).VDT_CLRLN;
-				$vdt.=MiniPavi\MiniPaviCli::setPos(1,5);
-				$vdt.=VDT_TXTYELLOW.MiniPavi\MiniPaviCli::toG2(substr($context['tnews'][$context['currnews']]['desc'],0,800)).VDT_CLRLN;
+				
+
+				$infoTxt = wordwrap($context['tnews'][$context['currnews']]['desc'],40,"\n");
+				$infoTxt = explode("\n",$infoTxt);
+				
+				for($i=0;$i<19 & isset($infoTxt[$i]);$i++) {
+					$vdt.=MiniPavi\MiniPaviCli::setPos(1,5+$i);
+					$vdt.=VDT_CLRLN.VDT_TXTYELLOW.MiniPavi\MiniPaviCli::toG2($infoTxt[$i]);
+				}
 			
 				$step = 45;
 				break 2;
@@ -279,7 +286,7 @@ try {
 						}
 						$context['currnews']--;
 					}
-					for($i=0;$i<20;$i++) {
+					for($i=0;$i<21;$i++) {
 						$vdt.=MiniPavi\MiniPaviCli::setPos(1,3+$i).VDT_CLRLN;
 					}
 					$step = 41;
