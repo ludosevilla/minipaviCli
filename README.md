@@ -11,13 +11,13 @@
 
 # Informations
 
-MiniPavi est une passerelle qui permet de développer des services Minitel sur une architecture classique Web+PHP.
+MiniPavi (MINI Point d'Accès VIdeotex) est une passerelle qui permet d'accèder à des services Minitel développés avec une architecture classique Web+PHP.
 
-MiniPaviCli.php est la classe pour s'interfacer avec la passerelle.
+MiniPaviCli.php est la classe pour s'interfacer avec la passerelle MiniPavi.
 
 Plus d'info sur http://www.minipavi.fr
 
-Les scripts de mini-services MiniChat, France24, SNCF, XMLint sont fournis à titre d'exemple.
+Les scripts de mini-services MiniChat, France24, SNCF, XMLint, MiniMeteo sont fournis à titre d'exemple.
 
 # Contenu
 
@@ -93,9 +93,13 @@ Voilà, terminé.
 Si le dossier de votre installation est accessible par exemple via l'url:
 http://www.monsite.fr/test/
 
-alors, le service installé est accessible par websocket à l'url:
+alors l'adresse websocket de votre service sera:
 ws://go.minipavi.fr:8182/url=http://www.monsite.fr/test/
 
-Vous pouvez utiliser, par exemple, l'émulateur Minitel (de MiEdit) disponible sur www.minipavi.fr pour y accéder.
+Vous pouvez accèder à votre service depuis l'accueil de MiniPavi:
+ - En utilisant, par exemple, l'émulateur Minitel (de MiEdit) disponible sur www.minipavi.fr 
+ - En connectant un vrai Minitel, par téléphone, en composant le 09 72 10 17 21 (+33 972101721)
+
+Vous devrez préalablement créer un profil créateur depuis l'accueil MiniPavi ou taper l'url de votre service directement depuis l'écran d'accueil.
 
 La librairie est aussi installable via composer: `composer require ludosevilla/minipavi-cli`.
