@@ -340,7 +340,7 @@ class MiniPaviCli {
 	// key: Clé d'autorisation pour connexions sortantes
 	**************************************************/
 
-	static function createConnectToTlnCmd($host,$key='') {
+	static function createConnectToTlnCmd($host,$echo='off',$case='lower',$key='') {
 		$host = trim($host);
 		if ($host == '')
 			return false;
@@ -349,9 +349,53 @@ class MiniPaviCli {
 		$cmd['COMMAND']['name']='connectToTln';
 		$cmd['COMMAND']['param']['host'] = $host;
 		$cmd['COMMAND']['param']['key'] = $key;
+		if ($echo !='off' && $echo !='on')
+			$echo ='off';
+		if ($case !='lower' && $case !='upper')
+			$case ='lower';
+		$cmd['COMMAND']['param']['echo'] = $echo;		
+		$cmd['COMMAND']['param']['case'] = $case;		
+		
 		return $cmd;
 	}
 
+	/*************************************************
+	// Demande la connexion a un serveur par ws
+	// à l'adresse indiquée
+	// host: adresse ex: 1.2.3.4:23
+	// key: Clé d'autorisation pour connexions sortantes
+	**************************************************/
+
+	static function createConnectToWsCmd($host,$path='/',$echo='off',$case='lower',$proto='',$key='') {
+		$host = trim($host);
+		if ($host == '')
+			return false;
+		
+		$cmd=array();
+		$cmd['COMMAND']['name']='connectToWs';
+		$cmd['COMMAND']['param']['host'] = $host;
+		$cmd['COMMAND']['param']['key'] = $key;
+		$cmd['COMMAND']['param']['path'] = $path;
+		if ($echo !='off' && $echo !='on')
+			$echo ='off';
+		if ($case !='lower' && $case !='upper')
+			$case ='lower';
+		$cmd['COMMAND']['param']['echo'] = $echo;		
+		$cmd['COMMAND']['param']['case'] = $case;		
+		$cmd['COMMAND']['param']['proto'] = $proto;		
+		return $cmd;
+	}
+
+
+	/*************************************************
+	// Demande de déconnexion
+	**************************************************/
+
+	static function createLibCnxCmd() {
+		$cmd=array();
+		$cmd['COMMAND']['name']='libCnx';
+		return $cmd;
+	}
 
 	
 	/*************************************************
@@ -369,9 +413,12 @@ class MiniPaviCli {
 	// Ecrit en ligne 0 puis le curseur revient à la position courante
 	**************************************************/
 	
-	static function writeLine0($txt) {
+	static function writeLine0($txt,$blink=false) {
 		$txt = self::toG2($txt);
-		$vdt = self::setPos(1,0).$txt.VDT_CLRLN."\n";
+		if ($blink) 
+			$blink=VDT_BLINK;
+		else $blink='';
+		$vdt = self::setPos(1,0).$blink.$txt.VDT_FIXED.VDT_CLRLN."\n";
 		return $vdt;
 	}
 
@@ -401,7 +448,11 @@ class MiniPaviCli {
 	**************************************************/	
 	
 	static function writeCentered($line,$text,$attr='') {
-		$vdt = self::setPos(ceil((40-mb_strlen($text))/2),$line);
+		if (mb_strlen($text)>=40) {
+			$vdt = self::setPos(1,$line);
+		} else {
+			$vdt = self::setPos(ceil((40-mb_strlen($text))/2),$line);
+		}
 		$vdt.= $attr.self::toG2($text);
 		return $vdt;
 	}
