@@ -98,10 +98,10 @@ alors l'adresse websocket de votre service sera:
 
 Vous pouvez accèder à votre service depuis l'accueil de MiniPavi:
  - En utilisant, par exemple, l'émulateur Minitel (de MiEdit) disponible sur www.minipavi.fr 
- - En connectant un vrai Minitel à MiniPavi, par téléphone, en composant le 09 72 10 17 21 (+33 972101721)
+ - En connectant un vrai Minitel à MiniPavi, par téléphone, en composant le **09 72 10 17 21** (+33 972101721)
 
 Vous devrez préalablement créer un profil créateur depuis l'accueil MiniPavi ou taper l'url de votre service directement depuis l'écran d'accueil.
 
-Enfin, si vous entrez directement l'url de votre service dans un navigateur, vous serez automatiquement redirigé vers l'émulateur avec affichage direct de votre service.
+Enfin, si vous entrez directement l'url de votre service dans un navigateur web, vous serez automatiquement redirigé vers l'émulateur avec affichage direct de votre service.
 
 La librairie est aussi installable via composer: `composer require ludosevilla/minipavi-cli`.
