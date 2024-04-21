@@ -12,6 +12,7 @@
  * 11/02/2024 : Redirection vers émulateur Minitel si appel direct depuis un navigateur
  * 08/03/2024 : Modifications concernant la converstions des caractères spéciaux
  * 16/03/2024 : Modifications concernant l'appel direct d'une url (ajout DIRECTCNX) et ajout des commandes createConnectToExtCmd et createConnectToTlnCmd
+ * 17/04/2024 : Modifications concernant createBackgroundCallCmd: ajout de la simulation utilisateur 
  *
  */
  
@@ -88,6 +89,19 @@ class MiniPaviCli {
 	static public $urlParams='';	// Paramètres fournis lors de l'appel à l'url du service
 	static public $context='';		// 65000 caractres libres d'utilisation et rappellés à chaque accès.
 	static public $typeSocket;		// Type de connexion ('websocket' ou 'other')
+	static public $versionMinitel;	// Version Minitel si connue, sinon '???'
+	
+	
+	/**********************************************************************************
+	//*********************************************************************************	
+	//**
+	//**
+	//**	Fonctions d'interfaçage avec MiniPavi
+	//**
+	//**
+	//*********************************************************************************	
+	//********************************************************************************/
+	
 	
 	/*************************************************
 	// Reçoit les données envoyées depuis MiniPavi
@@ -108,6 +122,7 @@ class MiniPaviCli {
 			self::$uniqueId = @$requestData->PAVI->uniqueId;
 			self::$remoteAddr = @$requestData->PAVI->remoteAddr;
 			self::$typeSocket = @$requestData->PAVI->typesocket;
+			self::$versionMinitel = @$requestData->PAVI->versionminitel;
 			self::$content = @$requestData->PAVI->content;
 			self::$context = @$requestData->PAVI->context;
 			self::$fctn = @$requestData->PAVI->fctn;
@@ -155,6 +170,19 @@ class MiniPaviCli {
 		trigger_error("[MiniPaviCli] ".$rep);
 		echo $rep."\n";
 	}
+
+
+
+	/**********************************************************************************
+	//*********************************************************************************	
+	//**
+	//**
+	//**	Fonctions de création de commandes
+	//**
+	//**
+	//*********************************************************************************	
+	//********************************************************************************/
+
 	
 	/*************************************************
 	// Cré une commande 'InputTxt' de saisie d'une ligne, validée par Envoi
@@ -284,25 +312,41 @@ class MiniPaviCli {
 
 
 	/*************************************************
-	// Demande d'appel par MiniPavi d'une url
-	// à un instant donné
-	// tUrl: tableau des url à appeller
-	// tTime: tableau des timestamp
+	// Demande différée d'appel par MiniPavi d'une url
+	// (plusieurs appels possibles)
+	// tUrl: tableau des url à appeller (ou des données envoyées, voir plus bas)
+	// tTime: tableau des timestamp de l'heure des appels à effectuer
+	// $tUniqueId: identifiants uniques qui seront indiqués dans les requêtes
+	// $tSimulate: si false appel l'url indiqué dans $tUrl sans changement de l'état de l'utilisateur (le service ne pourra que faire en retour un message en ligne 0 via la commande createPushServiceMsgCmd)
+	//				si true appel de l'url en simulant une saisie utilisateur: dans ce cas, l'url appellée est celle indiquée dans 'nexturl' de l'utilisateur et $tUrl contient les données "saisies".
+	//				Le service peut se comporter comme lorsqu'il y a interaction d'un utilisateur (affichage etc.)
+	//				Dans le premier cas (false), la touche de fonctione indiquée au script sera 'BGCALL', sinon (true) 'BGCALL-SIMU'
 	**************************************************/
 
-	static function createBackgroundCallCmd($tUrl=array(),$tTime=array()) {
+	static function createBackgroundCallCmd($tUrl=array(),$tTime=array(),$tUniqueId=array(),$tSimulate=array()) {
 		if (!is_array($tUrl) || count($tUrl)<1)
 			return false;
 		if (!is_array($tTime) || count($tTime)<1)
 			return false;
+		if (!is_array($tUniqueId) || count($tUniqueId)<1)
+			return false;
+		if (!is_array($tSimulate) || count($tSimulate)<1)
+			return false;
+		
 		$cmd=array();
 		$cmd['COMMAND']['name']='BackgroundCall';
 		$cmd['COMMAND']['param']['url'] = array();
 		$cmd['COMMAND']['param']['time'] = array();
+		$cmd['COMMAND']['param']['uniqueid'] = array();
+		$cmd['COMMAND']['param']['simulate'] = array();
 		$k=0;
 		foreach($tUrl as $key=>$url) {
 			$cmd['COMMAND']['param']['url'][$k]=$url;
 			$cmd['COMMAND']['param']['time'][$k]=$tTime[$key];
+			$cmd['COMMAND']['param']['uniqueid'][$k] = $tUniqueId[$key];
+			if ($tSimulate[$key] === true) 
+				$cmd['COMMAND']['param']['simulate'][$k] = $tSimulate[$key];
+			else $cmd['COMMAND']['param']['simulate'][$k] = false;
 			$k++;
 		}
 	
@@ -396,6 +440,18 @@ class MiniPaviCli {
 		$cmd['COMMAND']['name']='libCnx';
 		return $cmd;
 	}
+
+
+
+	/**********************************************************************************
+	//*********************************************************************************	
+	//**
+	//**
+	//**	Fonctions d'affichage
+	//**
+	//**
+	//*********************************************************************************	
+	//********************************************************************************/
 
 	
 	/*************************************************
