@@ -23,6 +23,7 @@ Les scripts de mini-services MiniChat, France24, SNCF, XMLint, MiniMeteo sont fo
 
 - MiniPaviCli.php: Classe pour communiquer avec la passerelle MiniPavi  
 - README.md: Ce fichier  
+- MiniPaviCli-doc.pdf: Documentation de MiniPaviCli.php & déscription du protocole service<->MiniPavi
 
 - **MiniChat**  
   MiniChat est un service de dialogue en direct qui permet le dialogue entre personnes connectées
