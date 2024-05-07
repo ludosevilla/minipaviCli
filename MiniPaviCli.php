@@ -116,6 +116,8 @@ class MiniPaviCli {
 			exit;
 		}
 		$rawPostData = file_get_contents("php://input");
+		
+		
 		try {
 			$requestData = json_decode($rawPostData,false,5,JSON_THROW_ON_ERROR);
 				
@@ -167,7 +169,7 @@ class MiniPaviCli {
 		if ($cmd && is_array($cmd))
 			$rep = array_merge($rep,$cmd);
 		$rep = json_encode($rep);
-		trigger_error("[MiniPaviCli] ".$rep);
+		
 		echo $rep."\n";
 	}
 
@@ -427,6 +429,25 @@ class MiniPaviCli {
 		$cmd['COMMAND']['param']['echo'] = $echo;		
 		$cmd['COMMAND']['param']['case'] = $case;		
 		$cmd['COMMAND']['param']['proto'] = $proto;		
+		return $cmd;
+	}
+
+
+	/*************************************************
+	// Demande de visualisation d'un autre utilisateur
+	// uniqueid: identifiant de la connexion à dupliquer
+	// key: Clé d'autorisation pour connexions sortantes
+	**************************************************/
+
+	static function createDuplicateStream($uniqueid,$key='') {
+		$uniqueid = trim($uniqueid);
+		if ($uniqueid == '')
+			return false;
+		
+		$cmd=array();
+		$cmd['COMMAND']['name']='duplicateStream';
+		$cmd['COMMAND']['param']['uniqueid'] = $uniqueid;
+		$cmd['COMMAND']['param']['key'] = $key;
 		return $cmd;
 	}
 
