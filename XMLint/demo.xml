@@ -29,7 +29,6 @@ Service de demo accessible depuis MiniPavi, code d'accès: 3615*DEMOXML
 			<couleur texte = "jaune" fond="bleu"/>
 			<ecrit texte="   DEMONSTRATION SERVICE MINIPAVI XML   "/>
 			
-			
 			<rectangle ligne="5" col="5" largeur="30" hauteur="4" couleur="bleu" />
 			
 			<position ligne="5" col="11" />
@@ -40,16 +39,21 @@ Service de demo accessible depuis MiniPavi, code d'accès: 3615*DEMOXML
 			<ecrit texte=" " />
 			<heure />
 			
-			<position ligne="7" col="7" />
+			<position ligne="6" col="7" />
 			<couleur texte = "bleu" fond="blanc" />
 			<inversion mode="actif" />
 			<clignote mode="actif" />
 			<ecrit texte=" Ce service est une simple" />
-			<position ligne="8" col="8" />
+			<position ligne="7" col="8" />
 			<couleur texte = "bleu" fond="blanc"/>
 			<inversion mode="actif" />
 			<clignote mode="actif" />
 			<ecrit texte=" arborescence de 3 pages" />
+			<position ligne="8" col="7" />
+			<couleur texte = "bleu" fond="blanc"/>
+			<inversion mode="actif" />
+			<clignote mode="actif" />
+			<ecrit texte=" et envoi de message email" />
 			
 			<position ligne="10" col="10" />
 			<couleur texte = "jaune" />
@@ -63,10 +67,8 @@ Service de demo accessible depuis MiniPavi, code d'accès: 3615*DEMOXML
 			<position ligne="13" col="7" />
 			<couleur texte = "jaune" />
 			<ecrit texte="SUITE/RETOUR pour changer" />
-
 			
-			
-			<position ligne="16" col="7" />
+			<position ligne="15" col="7" />
 			<doublelargeur />
 			<inversion mode="actif" />
 			<ecrit texte="1" />
@@ -75,7 +77,7 @@ Service de demo accessible depuis MiniPavi, code d'accès: 3615*DEMOXML
 			<couleur texte = "vert" />
 			<ecrit texte=" Affichage de la page 1" />
 			
-			<position ligne="18" col="7" />
+			<position ligne="17" col="7" />
 			<doublelargeur />
 			<inversion mode="actif" />
 			<ecrit texte="2" />
@@ -84,7 +86,7 @@ Service de demo accessible depuis MiniPavi, code d'accès: 3615*DEMOXML
 			<couleur texte = "vert" />
 			<ecrit texte=" Affichage de la page 2" />
 
-			<position ligne="20" col="7" />
+			<position ligne="19" col="7" />
 			<doublelargeur />
 			<inversion mode="actif" />
 			<ecrit texte="3" />
@@ -93,6 +95,14 @@ Service de demo accessible depuis MiniPavi, code d'accès: 3615*DEMOXML
 			<couleur texte = "vert" />
 			<ecrit texte=" Affichage de la page 3" />
 			
+			<position ligne="21" col="7" />
+			<doublelargeur />
+			<inversion mode="actif" />
+			<ecrit texte="4" />
+			<inversion mode="inactif" />
+			<taillenormale />
+			<couleur texte = "vert" />
+			<ecrit texte=" Email à contact@minipavi.fr" />
 			
 			
 			<position ligne="23" col="1" />
@@ -124,11 +134,11 @@ Service de demo accessible depuis MiniPavi, code d'accès: 3615*DEMOXML
 			<saisie choix="1" touche="envoi" suivant="page1" />
 			<saisie choix="2" touche="envoi" suivant="page2" />
 			<saisie choix="3" touche="envoi" suivant="page3" />
+			<saisie choix="4" touche="envoi" suivant="envoimessage" />
 			<saisie touche="repetition" suivant="sommaire" />				
 		</action>
 	
 	</page>
-
 
 	<!-- Début de la page "page1" -->
 	<page nom="page1">
@@ -270,6 +280,49 @@ Service de demo accessible depuis MiniPavi, code d'accès: 3615*DEMOXML
 			<saisie touche="retour" suivant="page2" />
 		</action>
 	</page>
+
+	<!-- Début de la page "envoimessage" -->
+	<page nom="envoimessage">
+		<ecran>
+			<efface />
+			<position ligne="2" col="1" />
+			<couleur texte = "bleu" fond="blanc" />
+			<doublehauteur/>
+			<inversion mode="actif" />
+			<ecrit texte=" Email à contact@minipavi.fr" />
+			<effacefindeligne />
+			<position ligne="23" col="1" />
+			<couleur texte = "magenta" />
+			<repete caractere="_" nombre="40" />
+			<couleur texte = "blanc" fond="bleu"/>
+			<ecrit texte=" Envoyer" />
+			<souligne mode="actif" />
+			<ecrit texte=" " />
+			<inversion mode="actif" />
+			<ecrit texte=" Envoi " />
+			<souligne mode="inactif" />
+			<inversion mode="inactif" />
+			<ecrit texte=" sinon" />
+			<souligne mode="actif" />
+			<ecrit texte=" " />
+			<inversion mode="actif" />
+			<ecrit texte=" Sommaire " />
+			<souligne mode="inactif" />
+			<inversion mode="inactif" />
+			<ecrit texte=" " />
+			<effacefindeligne />
+		</ecran>
+		<entree>
+			<zonemessage ligne="3" hauteur="20" curseur="visible" />
+			<validation touche="envoi" />
+			<validation touche="sommaire" />
+		</entree>
+		<action> 
+			<saisie touche="sommaire" suivant="sommaire" />
+			<saisie touche="envoi" suivant="sommaire" email="contact@minipavi.fr" sujet='Contact sur le site' msgok="Message bien envoyé!"/>
+		</action>
+	</page>
+			
 	
 	
 </service>

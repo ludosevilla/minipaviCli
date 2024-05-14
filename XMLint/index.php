@@ -15,7 +15,7 @@ define('XMLINT_VER', '1.0');
 
 //error_reporting(E_USER_NOTICE|E_USER_WARNING);
 error_reporting(E_ERROR);
-ini_set('display_errors',0);
+ini_set('display_errors',0);		// Mettre à "1" pour debugguer
 libxml_use_internal_errors(true);
 
 $startXml = false;	// A true si début d'interpretation d'une page
@@ -83,9 +83,13 @@ try {
 				$vdt.=MiniPavi\MiniPaviCli::setPos(1,6);
 				$vdt.="URL du fichier XML (http://..)";
 				
+				$vdt.=MiniPavi\MiniPaviCli::writeCentered(12,"Créez votre service Minitel",VDT_TXTMAGENTA);	
+				$vdt.=MiniPavi\MiniPaviCli::writeCentered(13,"avec un simple fichier XML !",VDT_TXTMAGENTA);	
+				$vdt.=MiniPavi\MiniPaviCli::writeCentered(15,"Toutes les infos sont disponibles sur",VDT_TXTMAGENTA);	
+				$vdt.=MiniPavi\MiniPaviCli::writeCentered(16,"www.minipavi.fr",VDT_TXTWHITE);	
 				
-				$vdt.=MiniPavi\MiniPaviCli::writeCentered(14,"Toutes les infos sont disponibles sur",VDT_TXTMAGENTA);	
-				$vdt.=MiniPavi\MiniPaviCli::writeCentered(15,"www.minipavi.fr",VDT_TXTWHITE);	
+				$vdt.=MiniPavi\MiniPaviCli::writeCentered(18,"Démonstration: code DEMOXML",VDT_TXTMAGENTA);	
+				$vdt.=MiniPavi\MiniPaviCli::writeCentered(19,"depuis l'accueil de MiniPavi.",VDT_TXTMAGENTA);	
 				
 				$vdt.=MiniPavi\MiniPaviCli::setPos(21,24);
 				$vdt.=VDT_BGBLUE.VDT_TXTWHITE.MiniPavi\MiniPaviCli::toG2(" Valider ").VDT_STARTUNDERLINE.' '.VDT_FDINV.' Envoi '.VDT_FDNORM.VDT_STOPUNDERLINE.' '.VDT_CLRLN;
@@ -134,6 +138,7 @@ try {
 				
 			case 10:
 				// Validation de l'url fournie dans $context['url'];
+				
 				$ch = curl_init();
 				curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 				curl_setopt($ch, CURLOPT_URL,$url );
@@ -233,7 +238,7 @@ try {
 					break 2;
 				}
 				
-				$r = processActionElement($action,trim(@MiniPavi\MiniPaviCli::$content[0]),MiniPavi\MiniPaviCli::$fctn,$next,$l0,$vdt);
+				$r = processActionElement($action,@MiniPavi\MiniPaviCli::$content,MiniPavi\MiniPaviCli::$fctn,$next,$l0,$vdt);
 
 				if (!$r) {
 					$context['validxml'] = '';

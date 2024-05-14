@@ -430,6 +430,37 @@ function processZonesaisieElement($obj,&$l,&$c,&$len,&$curseur,&$err) {
 	return true;
 }
 
+
+function processZonemessageElement($obj,&$l,&$h,&$curseur,&$err) {
+
+	if (!isset($obj['ligne']) || !isset($obj['curseur']) || !isset($obj['hauteur'])) {
+		$err = "Ligne/hauteur/curseur manquant";
+		return false;
+	}
+	$l = (int)@$obj['ligne'];
+	$h = (int)@$obj['hauteur'];
+	if ($l<1 || $l>24) {
+		$err = "Ligne valeur incorrecte";
+		return false;
+	}
+	
+	$maxHeight = 25 - $l;
+	if ($h<1 || $h>$maxHeight) {
+		$err = "Hauteur valeur incorrecte";
+		return false;
+	}
+	
+	
+	if ($obj['curseur']!='visible' && $obj['curseur']!='invisible') {
+		$err = "Curseur valeur incorrecte";
+		return false;
+	}
+	if ($obj['curseur'] == 'visible') $curseur = true;
+	else $curseur = false;
+	return true;
+}
+
+
 function processValidationElement($obj,&$validation,&$err) {
 
 	if (!isset($obj['touche'])) {
@@ -638,12 +669,16 @@ function processEcranElement($ecran,&$vdt) {
 function processEntreeElement($entree,&$cmd,&$vdt) {
 	$validation = 0;
 	$l=-1;
-
+	$typeZone ='';
+	
 	foreach ( $entree->children() as $node ) {
 		
 		switch($node->getName()) {
 			case 'zonesaisie':
-
+				if ($typeZone != '') {
+					break;
+				}
+				$typeZone = 'zonesaisie';
 				$r = processZonesaisieElement($node,$l,$c,$len,$curseur,$err);
 				if ($r === false) {
 					$vdt.=VDT_CLR.VDT_G0.VDT_POS.'BA'.VDT_SZDBLH.VDT_TXTWHITE.VDT_BGRED.' XML #014'.VDT_TXTBLACK.chr(0x7D).VDT_TXTWHITE.VDT_BGBLUE.MiniPavi\MiniPaviCli::toG2(' Zonesaisie: erreur').VDT_CLRLN;
@@ -652,6 +687,21 @@ function processEntreeElement($entree,&$cmd,&$vdt) {
 					return false;
 				}
 				break;
+				
+			case 'zonemessage':
+				if ($typeZone != '') {
+					break;
+				}
+				$typeZone = 'zonemessage';
+				$r = processZonemessageElement($node,$l,$h,$curseur,$err);
+				if ($r === false) {
+					$vdt.=VDT_CLR.VDT_G0.VDT_POS.'BA'.VDT_SZDBLH.VDT_TXTWHITE.VDT_BGRED.' XML #021'.VDT_TXTBLACK.chr(0x7D).VDT_TXTWHITE.VDT_BGBLUE.MiniPavi\MiniPaviCli::toG2(' Zonemessage: erreur').VDT_CLRLN;
+					$vdt.=MiniPavi\MiniPaviCli::setPos(1,4);
+					$vdt.=VDT_CRLF.$err.VDT_CRLF.$node->asXML();
+					return false;
+				}
+				break;
+				
 			case 'validation':
 
 				$r = processValidationElement($node,$validation,$err);
@@ -669,14 +719,17 @@ function processEntreeElement($entree,&$cmd,&$vdt) {
 	}
 	
 	if ($l==-1 || $validation == 0) {
-		$vdt.=VDT_CLR.VDT_G0.VDT_POS.'BA'.VDT_SZDBLH.VDT_TXTWHITE.VDT_BGRED.' XML #016'.VDT_TXTBLACK.chr(0x7D).VDT_TXTWHITE.VDT_BGBLUE.MiniPavi\MiniPaviCli::toG2(' Zonesaisie: manque zonesaisie/validation').VDT_CLRLN;
+		$vdt.=VDT_CLR.VDT_G0.VDT_POS.'BA'.VDT_SZDBLH.VDT_TXTWHITE.VDT_BGRED.' XML #016'.VDT_TXTBLACK.chr(0x7D).VDT_TXTWHITE.VDT_BGBLUE.MiniPavi\MiniPaviCli::toG2(' Zonesaisie: manque zonesaisie/zonemessage/validation').VDT_CLRLN;
 		$vdt.=MiniPavi\MiniPaviCli::setPos(1,4);
 		$vdt.=VDT_CRLF.$err.VDT_CRLF.$entree->asXML();
 		return false;
 		
 	}
+	if ($typeZone == 'zonesaisie')
+		$cmd=MiniPavi\MiniPaviCli::createInputTxtCmd($c,$l,$len,$validation,$curseur);
+	else
+		$cmd=MiniPavi\MiniPaviCli::createInputMsgCmd(1,$l,40,$h,$validation,$curseur);
 	
-	$cmd=MiniPavi\MiniPaviCli::createInputTxtCmd($c,$l,$len,$validation,$curseur);
 	return true;
 }
 
@@ -687,7 +740,8 @@ function processActionElement($action,$content,$fctn,&$next,&$l0,&$vdt) {
 		
 		switch($node->getName()) {
 			case 'saisie':
-				$r = processSaisieElement($node,$content,$fctn,$next,$err);
+			
+				$r = processSaisieElement($node,$content,$fctn,$next,$err,$vdt,$l0);
 				if ($r === false) {
 					$vdt.=VDT_CLR.VDT_G0.VDT_POS.'BA'.VDT_SZDBLH.VDT_TXTWHITE.VDT_BGRED.' XML #017'.VDT_TXTBLACK.chr(0x7D).VDT_TXTWHITE.VDT_BGBLUE.MiniPavi\MiniPaviCli::toG2(' Saisie: erreur').VDT_CLRLN;
 					$vdt.=MiniPavi\MiniPaviCli::setPos(1,4);
@@ -696,6 +750,9 @@ function processActionElement($action,$content,$fctn,&$next,&$l0,&$vdt) {
 				}
 				if ($next != '') {
 					// Choix trouvé!
+					if ($l0!='') {
+						$vdt.=MiniPavi\MiniPaviCli::writeLine0($l0);
+					}
 					return true;
 				}
 				break;
@@ -717,8 +774,9 @@ function processActionElement($action,$content,$fctn,&$next,&$l0,&$vdt) {
 
 
 
-function processSaisieElement($obj,$content,$fctn,&$next,&$err) {
-	
+function processSaisieElement($obj,$content,$fctn,&$next,&$err,&$vdt,&$l0) {
+	$vdt = '';
+	$l0 = '';
 	$next = '';
 	if (!isset($obj['touche'])) {
 		$err = "Touche manquante";
@@ -733,9 +791,26 @@ function processSaisieElement($obj,$content,$fctn,&$next,&$err) {
 
 	
 	if (strtoupper($obj['touche'])  == $fctn) {
-		if ((isset($obj['choix']) && $obj['choix'] == $content) || !isset($obj['choix'])) {
+		if ((isset($obj['choix']) && $obj['choix'] == trim($content[0])) || !isset($obj['choix'])) {
 			// Le choix correspond
 			$next = (string)$obj['suivant'];
+			if ((isset($obj['email']))) {
+				// Envoi du contenu saisie par email
+				$to      = $obj['email'];
+				
+				if ((isset($obj['sujet'])))
+					$subject = '[MiniPavi-XML] '.$obj['sujet'];
+				else
+					$subject = '[MiniPavi-XML] Message reçu';
+				foreach($content as $ligne) {
+						$message.=$ligne."\n";
+				}
+				$headers = 'From: contact@minipavi.fr' . "\r\n".
+					 'Content-Type: text/plain;charset=utf-8' ."\r\n";
+				mail($to, $subject, $message, $headers);			
+				if ((isset($obj['msgok']))) 
+					$l0 = $obj['msgok'];
+			}
 		}
 	}
 	return true;
