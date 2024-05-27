@@ -19,55 +19,55 @@
 namespace MiniPavi;
  
 const VERSION = '1.0';
-define('VDT_LEFT', chr(0x08));
-define('VDT_RIGHT', chr(0x09));
-define('VDT_DOWN', chr(0x0A));
-define('VDT_UP', chr(0x0B));
-define('VDT_CR', chr(0x0D));
-define('VDT_CRLF', chr(0x0D).chr(0x0A));
-define('VDT_CLR', chr(0x0C));
-define('VDT_G0', chr(0x0F));
-define('VDT_G1', chr(0x0E));
-define('VDT_G2', chr(0x19));
-define('VDT_POS', chr(0x1F));
-define('VDT_REP', chr(0x12));
-define('VDT_CURON', chr(0x11));
-define('VDT_CUROFF', chr(0x14));
-define('VDT_CLRLN', chr(0x18));
-define('VDT_SZNORM', chr(0x1B).chr(0x4C));
-define('VDT_SZDBLH', chr(0x1B).chr(0x4D));
-define('VDT_SZDBLW', chr(0x1B).chr(0x4E));
-define('VDT_SZDBLHW', chr(0x1B).chr(0x4F));
-define('VDT_TXTBLACK', chr(0x1B).'@');
-define('VDT_TXTRED', chr(0x1B).'A');
-define('VDT_TXTGREEN', chr(0x1B).'B');
-define('VDT_TXTYELLOW', chr(0x1B).'C');
-define('VDT_TXTBLUE', chr(0x1B).'D');
-define('VDT_TXTMAGENTA', chr(0x1B).'E');
-define('VDT_TXTCYAN', chr(0x1B).'F');
-define('VDT_TXTWHITE', chr(0x1B).'G');
-define('VDT_BGBLACK', chr(0x1B).'P');
-define('VDT_BGRED', chr(0x1B).'Q');
-define('VDT_BGGREEN', chr(0x1B).'R');
-define('VDT_BGYELLOW', chr(0x1B).'S');
-define('VDT_BGBLUE', chr(0x1B).'T');
-define('VDT_BGMAGENTA', chr(0x1B).'U');
-define('VDT_BGCYAN', chr(0x1B).'V');
-define('VDT_BGWHITE', chr(0x1B).'W');
-define('VDT_BLINK', chr(0x1B).'H');
-define('VDT_FIXED', chr(0x1B).'I');
-define('VDT_STOPUNDERLINE', chr(0x1B).'Y');
-define('VDT_STARTUNDERLINE', chr(0x1B).'Z');
-define('VDT_FDNORM', chr(0x1B).'\\');
-define('VDT_FDINV', chr(0x1B).']');
+define('VDT_LEFT', "\x08");			// Déplacement curseur vers la gauche
+define('VDT_RIGHT', "\x09");		// Déplacement curseur vers la droite
+define('VDT_DOWN', "\x0A");			// Déplacement curseur vers le bas
+define('VDT_UP', "\x0B");			// Déplacement curseur vers le haut
+define('VDT_CR', "\x0D");			// Retour charriot (début de ligne)
+define('VDT_CRLF', "\x0D\x0A");		// Retour charriot + déplacement vers le bas
+define('VDT_CLR', "\x0C");			// Effacement écran
+define('VDT_G0', "\x0F");			// Jeu de caractères G0
+define('VDT_G1', "\x0E");			// Jeu de caractères G1
+define('VDT_G2', "\x19");			// Jeu de caractères G2
+define('VDT_POS', "\x1F");			// Positionnement du curseur
+define('VDT_REP', "\x12");			// Répétition caractère
+define('VDT_CURON', "\x11");		// Curseur allumé
+define('VDT_CUROFF', "\x14");		// Curseur éteint
+define('VDT_CLRLN', "\x18");		// Effacement fin de ligne
+define('VDT_SZNORM', "\x1B\x4C");	// Taille des caratcères normale
+define('VDT_SZDBLH', "\x1B\x4D");	// Taille des caratcères double hauteur
+define('VDT_SZDBLW', "\x1B\x4E");	// Taille des caratcères double largeur
+define('VDT_SZDBLHW', "\x1B\x4F");	// Taille des caratcères double hauteur+double largeur
+define('VDT_TXTBLACK', "\x1B@");	// Couleur texte noir
+define('VDT_TXTRED', "\x1BA");		// Couleur texte rouge
+define('VDT_TXTGREEN', "\x1BB");	// Couleur texte vert
+define('VDT_TXTYELLOW', "\x1BC");	// Couleur texte jaune
+define('VDT_TXTBLUE', "\x1BD");		// Couleur texte bleu
+define('VDT_TXTMAGENTA', "\x1BE");	// Couleur texte magenta
+define('VDT_TXTCYAN', "\x1BF");		// Couleur texte cyan
+define('VDT_TXTWHITE', "\x1BG");	// Couleur texte blanc
+define('VDT_BGBLACK', "\x1BP");		// Couleur fond noir
+define('VDT_BGRED', "\x1BQ");		// Couleur fond rouge
+define('VDT_BGGREEN', "\x1BR");		// Couleur fond vert
+define('VDT_BGYELLOW', "\x1BS");	// Couleur fond jaune
+define('VDT_BGBLUE', "\x1BT");		// Couleur fond bleu
+define('VDT_BGMAGENTA', "\x1BU");	// Couleur fond magenta
+define('VDT_BGCYAN', "\x1BV");		// Couleur fond cyan
+define('VDT_BGWHITE', "\x1BW");		// Couleur fond blanc
+define('VDT_BLINK', "\x1BH");		// Clignotement
+define('VDT_FIXED', "\x1BI");		// Arrêt clignotement
+define('VDT_STOPUNDERLINE', "\x1BY");	// Arrêt soulignement
+define('VDT_STARTUNDERLINE', "\x1BZ");// Début soulignement
+define('VDT_FDNORM', "\x1B\\");		// Fond normal
+define('VDT_FDINV', "\x1B]");		// Fond inversé
 
-define('PRO_MIN',chr(0x1B).chr(0x3A).chr(0x69).chr(0x45));
-define('PRO_MAJ',chr(0x1B).chr(0x3A).chr(0x6A).chr(0x45));
-define('PRO_LOCALECHO_OFF',chr(0x1B).chr(0x3B).chr(0x60).chr(0x58).chr(0x51));
-define('PRO_LOCALECHO_ON',chr(0x1B).chr(0x3B).chr(0x61).chr(0x58).chr(0x51));
-define('PRO_ROULEAU_ON', chr(0x1B).chr(0x3A).chr(0x69).chr(0x43));
-define('PRO_ROULEAU_OFF', chr(0x1B).chr(0x3A).chr(0x6A).chr(0x43));
-
+define('PRO_MIN',"\x1B\x3A\x69\x45");					// Passage clavier en minuscules
+define('PRO_MAJ',"\x1B\x3A\x6A\x45");					// Passage clavier en majuscules
+define('PRO_LOCALECHO_OFF',"\x1B\x3B\x60\x58\x51");		// Arrêt echo local
+define('PRO_LOCALECHO_ON',"\x1B\x3B\x61\x58\x51");		// Marche echo local
+define('PRO_ROULEAU_ON', "\x1B\x3A\x69\x43");			// Mode rouleau actif
+define('PRO_ROULEAU_OFF', "\x1B\x3A\x6A\x43");			// Mode rouleau inactif
+define('VDT_RESET_DRCS', "\x1B\x28\x40\x1B\x29\x63");	// "Réinitialisation" des jeux de caractères normaux
 
 // Touche de fonctione acceptables pour une saisie utilisateur
 define('MSK_SOMMAIRE', 1);
@@ -546,47 +546,47 @@ class MiniPaviCli {
 		'β','ß','œ','Œ','ü','û','ú','ù','ö','ô','ó','ò','ï','î','í','ì','ë','ä',
 		'â','á','£','°','±','←','↑','→','↓','¼','½','¾','Â','Î','ō','á','’',' ','ň','ć','ř','ý','š','í','ą');
 		
-		$tabG2=array(VDT_G2.chr(0x42).'e',
-		VDT_G2.chr(0x41).'e',
-		VDT_G2.chr(0x41).'a',
-		VDT_G2.chr(0x4B).chr(0x63),
-		VDT_G2.chr(0x43).'e',
-		VDT_G2.chr(0x42).'E',
-		VDT_G2.chr(0x41).'E',
-		VDT_G2.chr(0x41).'A',
-		VDT_G2.chr(0x4B).chr(0x63),
-		VDT_G2.chr(0x43).'E',
-		VDT_G2.chr(0x7B),		
-		VDT_G2.chr(0x7B),		
-		VDT_G2.chr(0x7A),		
-		VDT_G2.chr(0x6A),		
-		VDT_G2.chr(0x48).chr(0x75),		
-		VDT_G2.chr(0x43).chr(0x75),		
-		VDT_G2.chr(0x42).chr(0x75),		
-		VDT_G2.chr(0x41).chr(0x75),		
-		VDT_G2.chr(0x48).chr(0x6F),		
-		VDT_G2.chr(0x43).chr(0x6F),		
-		VDT_G2.chr(0x42).chr(0x6F),		
-		VDT_G2.chr(0x41).chr(0x6F),		
-		VDT_G2.chr(0x48).chr(0x69),		
-		VDT_G2.chr(0x43).chr(0x69),		
-		VDT_G2.chr(0x42).chr(0x69),		
-		VDT_G2.chr(0x41).chr(0x69),		
-		VDT_G2.chr(0x48).chr(0x65),		
-		VDT_G2.chr(0x48).chr(0x61),		
-		VDT_G2.chr(0x43).chr(0x61),		
-		VDT_G2.chr(0x42).chr(0x61),
-		VDT_G2.chr(0x23),		
-		VDT_G2.chr(0x30),		
-		VDT_G2.chr(0x31),		
-		VDT_G2.chr(0x2C),		
-		VDT_G2.chr(0x2D),		
-		VDT_G2.chr(0x2E),		
-		VDT_G2.chr(0x2F),		
-		VDT_G2.chr(0x3C),		
-		VDT_G2.chr(0x3D),		
-		VDT_G2.chr(0x3E),
-		VDT_G2.chr(0x43).'A',
+		$tabG2=array(VDT_G2."\x42e",
+		VDT_G2."\x41e",
+		VDT_G2."\x41a",
+		VDT_G2."\x4B\x63",
+		VDT_G2."\x43e",
+		VDT_G2."\x42E",
+		VDT_G2."\x41E",
+		VDT_G2."\x41A",
+		VDT_G2."\x4B\x63",
+		VDT_G2."\x43E",
+		VDT_G2."\x7B",		
+		VDT_G2."\x7B",		
+		VDT_G2."\x7A",		
+		VDT_G2."\x6A",		
+		VDT_G2."\x48\x75",		
+		VDT_G2."\x43\x75",		
+		VDT_G2."\x42\x75",		
+		VDT_G2."\x41\x75",		
+		VDT_G2."\x48\x6F",		
+		VDT_G2."\x43\x6F",		
+		VDT_G2."\x42\x6F",		
+		VDT_G2."\x41\x6F",		
+		VDT_G2."\x48\x69",		
+		VDT_G2."\x43\x69",		
+		VDT_G2."\x42\x69",		
+		VDT_G2."\x41\x69",		
+		VDT_G2."\x48\x65",		
+		VDT_G2."\x48\x61",		
+		VDT_G2."\x43\x61",		
+		VDT_G2."\x42\x61",
+		VDT_G2."\x23",		
+		VDT_G2."\x30",		
+		VDT_G2."\x31",		
+		VDT_G2."\x2C",		
+		VDT_G2."\x2D",		
+		VDT_G2."\x2E",		
+		VDT_G2."\x2F",		
+		VDT_G2."\x3C",		
+		VDT_G2."\x3D",		
+		VDT_G2."\x3E",
+		VDT_G2."\x43A",
 		'I','o','a',"'",' ','n','c','r','y','s','i','a'
 		);
 		
