@@ -79,6 +79,8 @@ define('MSK_CORRECTION', 32);
 define('MSK_SUITE', 64);
 define('MSK_ENVOI', 128);
 
+define('DEFAULT_MINIPAVI_GW', 'wss://go.minipavi.fr:8181');		// Passerelle MiniPavi à utiliser si l'appel au script n'est pas effectué par une passerelle
+
 
 class MiniPaviCli {
 	
@@ -111,7 +113,7 @@ class MiniPaviCli {
 		if (strpos(@$_SERVER['HTTP_USER_AGENT'],'MiniPAVI') === false) {
 			$currentUrl = (empty($_SERVER['HTTPS']) ? 'http' : 'https') . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 			$currentUrl = urlencode($currentUrl);
-			$redirectUrl = 'http://www.minipavi.fr/emulminitel/indexws.php?url='.urlencode('wss://go.minipavi.fr:8181?url='.$currentUrl);
+			$redirectUrl = 'http://www.minipavi.fr/emulminitel/indexws.php?url='.urlencode(DEFAULT_MINIPAVI_GW.'?url='.$currentUrl);
 			header("Location: $redirectUrl");
 			exit;
 		}
