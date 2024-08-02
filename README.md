@@ -11,9 +11,9 @@
 
 # Informations
 
-MiniPavi (MINI Point d'Accès VIdeotex) est une passerelle qui permet d'accèder à des services Minitel développés avec une architecture classique Web+PHP.
+MiniPavi (MINI Point d'Accès VIdeotex) est une passerelle qui permet, entre autres, d'accèder à des services Minitel développés avec une architecture classique Web+PHP.
 
-MiniPaviCli.php est la classe pour s'interfacer avec la passerelle MiniPavi.
+MiniPaviCli.php est la classe pour s'interfacer avec la passerelle MiniPavi et développer vos propres services.
 
 Plus d'info sur http://www.minipavi.fr
 
@@ -100,6 +100,7 @@ alors l'adresse websocket de votre service sera:
 Vous pouvez accèder à votre service depuis l'accueil de MiniPavi:
  - En utilisant, par exemple, l'émulateur Minitel (de MiEdit) disponible sur www.minipavi.fr 
  - En connectant un vrai Minitel à MiniPavi, par téléphone, en composant le **09 72 10 17 21** (+33 972101721)
+ - Par telnet, en utilisant un émulateur antique (du type Timtel de Goto Informatique) et en vous connectant à l'adresse `go.minipavi.fr` port `516`
 
 Vous devrez préalablement créer un profil créateur depuis l'accueil MiniPavi ou taper l'url de votre service directement depuis l'écran d'accueil.
 
