@@ -13,6 +13,7 @@
  * 08/03/2024 : Modifications concernant la converstions des caractères spéciaux
  * 16/03/2024 : Modifications concernant l'appel direct d'une url (ajout DIRECTCNX) et ajout des commandes createConnectToExtCmd et createConnectToTlnCmd
  * 17/04/2024 : Modifications concernant createBackgroundCallCmd: ajout de la simulation utilisateur 
+ * 19/08/2024 : Ajout fonctions "WebMedia"
  *
  */
  
@@ -113,7 +114,7 @@ class MiniPaviCli {
 		if (strpos(@$_SERVER['HTTP_USER_AGENT'],'MiniPAVI') === false) {
 			$currentUrl = (empty($_SERVER['HTTPS']) ? 'http' : 'https') . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 			$currentUrl = urlencode($currentUrl);
-			$redirectUrl = 'http://www.minipavi.fr/emulminitel/indexws.php?url='.urlencode(DEFAULT_MINIPAVI_GW.'?url='.$currentUrl);
+			$redirectUrl = 'http://www.minipavi.fr/emulminitel/index.php?gw='.urlencode(DEFAULT_MINIPAVI_GW.'/?url='.$currentUrl);
 			header("Location: $redirectUrl");
 			exit;
 		}
@@ -470,7 +471,7 @@ class MiniPaviCli {
 	//*********************************************************************************	
 	//**
 	//**
-	//**	Fonctions d'affichage
+	//**	Fonctions d'affichage / multimedia
 	//**
 	//**
 	//*********************************************************************************	
@@ -536,6 +537,46 @@ class MiniPaviCli {
 		return $vdt;
 	}
 
+	/*************************************************
+	// Génère code videotex de demande d'affichage sur WebMedia de la video YT $youtubeId
+	**************************************************/	
+	
+	static function webMediaYoutube($youtubeId) {
+		$vdt = self::setPos(1,0);
+		$vdt.= "\x1B@\x14#DYT:$youtubeId\x14#F".VDT_CLRLN."\n";
+		return $vdt;
+	}
+
+	/*************************************************
+	// Génère code videotex de demande d'affichage sur WebMedia d'une video accessible à l'URL $url
+	**************************************************/	
+	
+	static function webMediaVideo($url) {
+		$vdt = self::setPos(1,0);
+		$vdt.= "\x1B@\x14#DVID:$url\x14#F".VDT_CLRLN."\n";
+		return $vdt;
+	}
+
+	/*************************************************
+	// Génère code videotex de demande de jouer sur WebMedia une son accessible à l'URL $url
+	**************************************************/	
+
+	static function webMediaSound($url) {
+		$vdt = self::setPos(1,0);
+		$vdt.= "\x1B@\x14#DSND:$url\x14#F".VDT_CLRLN."\n";
+		return $vdt;
+	}
+
+	/*************************************************
+	// Génère code videotex de demande d'affichage sur WebMedia d'une image accessible à l'URL $url
+	**************************************************/	
+
+	static function webMediaImg($url) {
+		$vdt = self::setPos(1,0);
+		$vdt.= "\x1B@\x14#DIMG:$url\x14#F".VDT_CLRLN."\n";
+		return $vdt;
+	}
+	
 	/*************************************************
 	// Conversion de caractères spéciaux
 	**************************************************/
