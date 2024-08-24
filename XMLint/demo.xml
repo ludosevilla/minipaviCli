@@ -49,11 +49,11 @@ Service de demo accessible depuis MiniPavi, code d'accès: 3615*DEMOXML
 			<inversion mode="actif" />
 			<clignote mode="actif" />
 			<ecrit texte=" arborescence de 3 pages" />
-			<position ligne="8" col="7" />
+			<position ligne="8" col="11" />
 			<couleur texte = "bleu" fond="blanc"/>
 			<inversion mode="actif" />
 			<clignote mode="actif" />
-			<ecrit texte=" et envoi de message email" />
+			<ecrit texte=" et démonstrations" />
 			
 			<position ligne="10" col="10" />
 			<couleur texte = "jaune" />
@@ -68,41 +68,65 @@ Service de demo accessible depuis MiniPavi, code d'accès: 3615*DEMOXML
 			<couleur texte = "jaune" />
 			<ecrit texte="SUITE/RETOUR pour changer" />
 			
-			<position ligne="15" col="7" />
+			<position ligne="16" col="4" />
+			<souligne mode="actif" />
+			<ecrit texte=" " />
 			<doublelargeur />
 			<inversion mode="actif" />
-			<ecrit texte="1" />
+			<ecrit texte=" 1 " />
+			<souligne mode="inactif" />
 			<inversion mode="inactif" />
 			<taillenormale />
 			<couleur texte = "vert" />
 			<ecrit texte=" Affichage de la page 1" />
 			
-			<position ligne="17" col="7" />
+			<position ligne="17" col="4" />
+			<souligne mode="actif" />
+			<ecrit texte=" " />
 			<doublelargeur />
 			<inversion mode="actif" />
-			<ecrit texte="2" />
+			<ecrit texte=" 2 " />
+			<souligne mode="inactif" />
 			<inversion mode="inactif" />
 			<taillenormale />
 			<couleur texte = "vert" />
 			<ecrit texte=" Affichage de la page 2" />
 
-			<position ligne="19" col="7" />
+			<position ligne="18" col="4" />
+			<souligne mode="actif" />
+			<ecrit texte=" " />
 			<doublelargeur />
 			<inversion mode="actif" />
-			<ecrit texte="3" />
+			<ecrit texte=" 3 " />
+			<souligne mode="inactif" />
 			<inversion mode="inactif" />
 			<taillenormale />
 			<couleur texte = "vert" />
 			<ecrit texte=" Affichage de la page 3" />
 			
-			<position ligne="21" col="7" />
+			<position ligne="19" col="4" />
+			<souligne mode="actif" />
+			<ecrit texte=" " />
 			<doublelargeur />
 			<inversion mode="actif" />
-			<ecrit texte="4" />
+			<ecrit texte=" 4 " />
+			<souligne mode="inactif" />
 			<inversion mode="inactif" />
 			<taillenormale />
 			<couleur texte = "vert" />
 			<ecrit texte=" Email à contact@minipavi.fr" />
+
+			<position ligne="20" col="4" />
+			<souligne mode="actif" />
+			<ecrit texte=" " />
+			<doublelargeur />
+			<inversion mode="actif" />
+			<ecrit texte=" 5 " />
+			<souligne mode="inactif" />
+			<inversion mode="inactif" />
+			<taillenormale />
+			<couleur texte = "vert" />
+			<ecrit texte=" Démonstration WebMedia" />
 			
 			
 			<position ligne="23" col="1" />
@@ -135,6 +159,7 @@ Service de demo accessible depuis MiniPavi, code d'accès: 3615*DEMOXML
 			<saisie choix="2" touche="envoi" suivant="page2" />
 			<saisie choix="3" touche="envoi" suivant="page3" />
 			<saisie choix="4" touche="envoi" suivant="envoimessage" />
+			<saisie choix="5" touche="envoi" suivant="demowebmedia" />
 			<saisie touche="repetition" suivant="sommaire" />				
 		</action>
 	
@@ -323,7 +348,137 @@ Service de demo accessible depuis MiniPavi, code d'accès: 3615*DEMOXML
 		</action>
 	</page>
 			
-	
+	<page nom="demowebmedia">
+		<ecran>
+			<efface />
+			<position ligne="1" col="1" />
+			<graphique />
+			<couleur texte = "rouge"/>
+			<repete caractere="X" nombre="40" />
+			<texte />
+			<position ligne="3" col="1" />
+			<doublehauteur />
+			<couleur texte = "jaune" fond="bleu"/>
+			<ecrit texte="         DEMONSTRATION WEBMEDIA         "/>
+
+			<position ligne="6" col="1" />
+			<ecrit texte="   WebMedia permet de lire une vidéo,   " />
+			<position ligne="7" col="1" />
+			<ecrit texte="  jouer un son ou afficher une image.   " />
+			
+			
+			<rectangle ligne="9" col="1" largeur="40" hauteur="5" couleur="vert" />			
+			<position ligne="10" col="1" />
+			<couleur texte = "vert" fond="noir" />
+			<inversion mode="actif" />
+			<ecrit texte="   Vous utilisez un émulateur et une" />
+			<position ligne="11" col="1" />
+			<couleur texte = "vert" fond="noir" />
+			<inversion mode="actif" />
+			<ecrit texte=" barre verte est présente sous l'écran:" />			
+			<position ligne="12" col="1" />
+			<couleur texte = "vert" fond="noir" />
+			<inversion mode="actif" />
+			<ecrit texte="           Vous êtes prêt !" />			
+
+
+			<rectangle ligne="15" col="1" largeur="40" hauteur="6" couleur="rouge" />						
+			<position ligne="16" col="3" />
+			<couleur texte = "rouge" fond="blanc" />
+			<inversion mode="actif" />
+			<ecrit texte=" Sinon, avec votre mobile, tablette" />
+			<position ligne="17" col="3" />
+			<couleur texte = "rouge" fond="blanc" />
+			<inversion mode="actif" />
+			<ecrit texte=" ou ordi, connectez-vous" />
+			<clignote mode="actif" />
+			<ecrit texte=" AVANT" />
+			<clignote mode="inactif" />
+			<ecrit texte=" à :" />
+			<position ligne="18" col="10" />
+			<couleur texte = "rouge" fond="blanc" />
+			<inversion mode="actif" />
+			<ecrit texte=" http://wm.minipavi.fr" />
+			<position ligne="19" col="7" />9
+			<couleur texte = "rouge" fond="blanc" />
+			<inversion mode="actif" />
+			<ecrit texte=" et entrez le code pin : " />
+			<pin />
+			
+			<position ligne="22" col="3" />
+			<inversion mode="actif" />
+			<ecrit texte=" SUITE " />
+			<inversion mode="inactif" />
+			<ecrit texte=" pour voir une vidéo YouTube" />
+			<position ligne="24" col="3" />
+			<inversion mode="actif" />
+			<ecrit texte=" SOMMAIRE " />
+			<inversion mode="inactif" />
+			<ecrit texte=" pour revenir à l'accueil" />
+		</ecran>
+		<entree>
+			<zonesaisie ligne="24" col="40" longueur="1" curseur="invisible" />
+			<validation touche="suite" />
+			<validation touche="repetition" />
+			<validation touche="sommaire" />
+		</entree>
+		<action defaut="Erreur de saisie!" >
+			<saisie touche="suite" suivant="demowebmedia-youtube" />				
+			<saisie touche="repetition" suivant="demowebmedia" />							
+			<saisie touche="sommaire" suivant="sommaire" />										
+		</action>
+	</page>
+			
+	<page nom="demowebmedia-youtube">
+		<ecran>
+			<webmedia type="yt" infos="PE1lzqJCeJ0" />
+			<efface />			
+			<rectangle ligne="5" col="5" largeur="30" hauteur="4" couleur="bleu" />
+			<position ligne="6" col="11" />
+			<doublehauteur />
+			<couleur texte = "jaune" fond="bleu"/>
+			<ecrit texte=" La vidéo YouTube"/>
+			<position ligne="8" col="12" />
+			<doublehauteur />
+			<couleur texte = "jaune" fond="bleu"/>
+			<ecrit texte=" va s'afficher!"/>
+			
+			<position ligne="13" col="4" />
+			<couleur texte = "jaune"/>
+			<ecrit texte="Si vous utilisez l'émulateur avec"/>
+			<position ligne="14" col="2" />
+			<couleur texte = "jaune"/>
+			<ecrit texte="une barre verte sous l'écran, la vidéo"/>
+			<position ligne="15" col="7" />
+			<couleur texte = "jaune"/>
+			<ecrit texte="se joue directement dedans."/>
+			
+			<position ligne="17" col="2" />
+			<couleur texte = "jaune"/>
+			<ecrit texte="Sinon, elle se joue dans l'appareil que"/>
+			<position ligne="18" col="4" />
+			<couleur texte = "jaune"/>
+			<ecrit texte="vous avez préalablement connecté à"/>
+			<position ligne="19" col="10" />
+			<couleur texte = "jaune"/>
+			<ecrit texte="http://wm.minipavi.fr"/>
+			
+			<position ligne="22" col="3" />
+			<inversion mode="actif" />
+			<ecrit texte=" SOMMAIRE " />
+			<inversion mode="inactif" />
+			<ecrit texte=" pour revenir à l'accueil" />
+		</ecran>
+		<entree>
+			<zonesaisie ligne="24" col="40" longueur="1" curseur="invisible" />
+			<validation touche="repetition" />
+			<validation touche="sommaire" />
+		</entree>
+		<action defaut="Erreur de saisie!" >
+			<saisie touche="repetition" suivant="demowebmedia-youtube" />							
+			<saisie touche="sommaire" suivant="sommaire" />										
+		</action>
+	</page>
 	
 </service>
 <!-- On termine toujours par la balise "/service" -->
