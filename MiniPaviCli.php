@@ -2,7 +2,7 @@
 /**
  * @file MiniPaviCli.php
  * @author Jean-arthur SILVE <contact@minipavi.fr>
- * @version 1.1 Novembre 2023
+ * @version 1.1 Novembre 2023 - Août 2024
  *
  * Communication avec la passerelle MiniPavi
  *
@@ -576,6 +576,17 @@ class MiniPaviCli {
 		$vdt.= "\x1B@\x14#DIMG:$url\x14#F".VDT_CLRLN."\n";
 		return $vdt;
 	}
+
+	/*************************************************
+	// Génère code videotex pour lien vers $url
+	**************************************************/	
+	
+	static function webMediaUrl($url) {
+		$vdt = self::setPos(1,0);
+		$vdt.= "\x1B@\x14#DURL:$url\x14#F".VDT_CLRLN."\n";
+		return $vdt;
+	}
+	
 	
 	/*************************************************
 	// Conversion de caractères spéciaux
