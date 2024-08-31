@@ -15,6 +15,8 @@ MiniPavi (MINI Point d'Accès VIdeotex) est une passerelle qui permet, entre aut
 
 MiniPaviCli.php est la classe pour s'interfacer avec la passerelle MiniPavi et développer vos propres services.
 
+DisplayPaginatedText.php et DisplayList.php sont deux classes, facultatives, destinées à faciliter la mise en œuvre de l’affichage d’un texte/d'une liste sur plusieurs pages.
+
 Plus d'info sur http://www.minipavi.fr
 
 Les scripts de mini-services MiniChat, France24, SNCF, XMLint, MiniMeteo sont fournis à titre d'exemple.
@@ -22,8 +24,10 @@ Les scripts de mini-services MiniChat, France24, SNCF, XMLint, MiniMeteo sont fo
 # Contenu
 
 - MiniPaviCli.php: Classe pour communiquer avec la passerelle MiniPavi  
+- DisplayPaginatedText.php: Classe facultative pour l'affichage d'un texte sur plusieurs pages avec navigation via les touches Répétition, Suite et Retour.
+- DisplayList.php : Classe facultative pour l'affichage d'une liste de choix sur plusieurs pages avec navigation via les touches Répétition, Envoi, Suite et Retour.
 - README.md: Ce fichier  
-- MiniPaviCli-doc.pdf: Documentation de MiniPaviCli.php & déscription du protocole service<->MiniPavi
+- MiniPaviCli-doc.pdf: Documentation de MiniPaviCli.php, DisplayPaginatedText.php, DisplayList & déscription du protocole service<->MiniPavi
 
 - **MiniChat**  
   MiniChat est un service de dialogue en direct qui permet le dialogue entre personnes connectées
@@ -100,8 +104,10 @@ alors l'adresse websocket de votre service sera:
 Vous pouvez accèder à votre service depuis l'accueil de MiniPavi:
  - En utilisant, par exemple, l'émulateur Minitel (de MiEdit) disponible sur www.minipavi.fr 
  - En connectant un vrai Minitel à MiniPavi, par téléphone, en composant le **09 72 10 17 21** (+33 972101721)
+ - En utilisant un boîter à base d'ESP32 connecté à un vrai Minitel (Minimit de Multiplié, Minitel-ESP32 de Iodeo, ...)
  - Par telnet, en utilisant un émulateur antique (du type Timtel de Goto Informatique) et en vous connectant à l'adresse `go.minipavi.fr` port `516`
-
+ - Avec le logiciel VDT2BMP de JF Delnero (Version Linux : https://github.com/jfdelnero/minitel/tree/master/VDT2BMP ; Version Windows : http://hxc2001.free.fr/minitel/vdt2bmp.zip )
+ 
 Vous devrez préalablement créer un profil créateur depuis l'accueil MiniPavi ou taper l'url de votre service directement depuis l'écran d'accueil.
 
 Enfin, si vous entrez directement l'url de votre service dans un navigateur web, vous serez automatiquement redirigé vers l'émulateur avec affichage direct de votre service.
