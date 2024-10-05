@@ -132,12 +132,22 @@ try {
 	}
 
 	
-	if (MiniPavi\MiniPaviCli::$fctn == 'FIN' || MiniPavi\MiniPaviCli::$fctn == 'FCTN?') {
-			// Deconnexion (attention, peut être appellé plusieurs fois de suite..)
+	if (MiniPavi\MiniPaviCli::$fctn == 'FIN') {
+			// Deconnexion 
 			trigger_error("[MiniChat] DECO");
 			$flist = mchat_openListFile();
 			$fmsg = mchat_openMsgFile();
+			$tCnx = mchat_getConnectedList($flist,$numCnx,true);
+			$message = 'Un connecté est parti!';
+			foreach($tCnx as $k=>$cnx) {
+				if ($cnx['id'] == MiniPavi\MiniPaviCli::$uniqueId) {
+					$message = $cnx['name'].' vient de nous quitter!';
+					unset($tCnx[$k]);
+					break;
+				}
+			}
 			mchat_removeConnected($flist,$fmsg,MiniPavi\MiniPaviCli::$uniqueId);
+
 			@fclose($flist);
 			@fclose($fmsg);
 			if (MINICHAT_CHATGPT) {
@@ -145,6 +155,20 @@ try {
 				$fctx=cGPT_openHistoFile();
 				cGPT_removeHisto($fctx,0,MiniPavi\MiniPaviCli::$uniqueId);
 				@fclose($fctx);
+			}
+			
+			// On prévient, en ligne 0, les autres connectés du départ de celui-ci
+			$tUniqueId = array();
+			$cmd = null;
+			foreach($tCnx as $cnx) {
+				if (substr($cnx['id'],0,4) != 'CGPT') {
+					$tUniqueId[]=$cnx['id'];
+					$tMsg[]=$message;
+				}
+			}
+			if (count($tUniqueId)>0) {
+				$cmd = MiniPavi\MiniPaviCli::createPushServiceMsgCmd($tMsg,$tUniqueId);
+				MiniPavi\MiniPaviCli::send('','','',false,$cmd);
 			}
 			exit;
 	}
@@ -240,6 +264,8 @@ try {
 					$directCall=false;
 					break 2;
 				}
+				
+
 				// C'est donc ENVOI : traitement de la saisie des 2 zones (pseudo + cv)
 				setStep(20);
 				break;
@@ -287,7 +313,7 @@ try {
 				@fclose($flist);
 				
 				trigger_error("[MiniChat] ".($numCnx+1)." connecte(s)");
-				setStep(21);
+				setStep(30);
 				break;
 			case 21:
 				// Liste des connectés : affichage partie fixe
@@ -461,7 +487,39 @@ try {
 				unset($context['sendidmsg']);
 				setStep(60);				
 				break;
+			
+			case 30:
+				$vdt.=MiniPavi\MiniPaviCli::setPos(1,10).VDT_CUROFF;
+				for($i=0;$i<13;$i++) {
+					$vdt.=VDT_CLRLN.VDT_CRLF;
+				}
+				$vdt.=MiniPavi\MiniPaviCli::writeCentered(11,"Quelques explications...",VDT_TXTYELLOW);
 				
+				$vdt.=MiniPavi\MiniPaviCli::writeCentered(13,"Ce chat vous permet de dialoguer avec");
+				$vdt.=MiniPavi\MiniPaviCli::writeCentered(14,"les autres connectés, mais aussi avec");
+				$vdt.=MiniPavi\MiniPaviCli::writeCentered(15,"des connectés \"ChatGPT\" !");
+				
+				$vdt.=MiniPavi\MiniPaviCli::writeCentered(16,"N'hésitez pas à entamer la conversation");
+				$vdt.=MiniPavi\MiniPaviCli::writeCentered(17,"de manière totalement naturelle!");
+				$vdt.=MiniPavi\MiniPaviCli::writeCentered(18,"Par exemple: \"Slt! ca va?\",\"Ca roule?\"");
+	
+				$vdt.=MiniPavi\MiniPaviCli::writeCentered(19,"Ensuite, laissez le temps à votre");
+				$vdt.=MiniPavi\MiniPaviCli::writeCentered(20,"interlocuteur pour répondre!");
+
+				$vdt.=MiniPavi\MiniPaviCli::writeCentered(21,"Vous serez averti en haut de votre écran");
+				$vdt.=MiniPavi\MiniPaviCli::writeCentered(22,"lorsque vous recevrez un message.");
+
+				$vdt.=MiniPavi\MiniPaviCli::setPos(13,24);
+				$vdt.=VDT_TXTWHITE.MiniPavi\MiniPaviCli::toG2('Accèder au dialogue ');
+				$vdt.=VDT_TXTBLACK.VDT_BGGREEN.' Suite '.VDT_TXTWHITE;
+				setStep(31);
+				break 2;
+			case 31:
+				if (MiniPavi\MiniPaviCli::$fctn == 'SUITE') {
+					setStep(21);
+					break;
+				}
+				break 2;
 				
 			case 50:
 				// Lecture des messages: Affichage partie fixe
@@ -566,7 +624,8 @@ try {
 							// Demande d'appel différé par MiniPavi afin de traiter le message
 							$tUrl=array($prot."://".$_SERVER['HTTP_HOST']."".$_SERVER['PHP_SELF'].'?step=1000&id='.$tMsg[0]['idexp']);
 							$tTime=array(time()+rand(5,10));	// Leger différé de la requête, pour que ca fasse plus vrai: personne ne réponds immédiattement
-							$cmd = MiniPavi\MiniPaviCli::createBackgroundCallCmd($tUrl,$tTime);
+							$tUniqueId=array(MiniPavi\MiniPaviCli::$uniqueId);
+							$cmd = MiniPavi\MiniPaviCli::createBackgroundCallCmd($tUrl,$tTime,$tUniqueId,array(false));
 						}
 					}
 				} else {
@@ -585,7 +644,8 @@ try {
 						// Demande d'appel différé par MiniPavi afin de traiter le message
 						$tUrl=array($prot."://".$_SERVER['HTTP_HOST']."".$_SERVER['PHP_SELF'].'?step=1000&id='.$context['sendiddest']);
 						$tTime=array(time()+rand(5,10));	// Leger différé de la requête, pour que ca fasse plus vrai: personne ne réponds immédiattement
-						$cmd = MiniPavi\MiniPaviCli::createBackgroundCallCmd($tUrl,$tTime);
+						$tUniqueId=array(MiniPavi\MiniPaviCli::$uniqueId);
+						$cmd = MiniPavi\MiniPaviCli::createBackgroundCallCmd($tUrl,$tTime,$tUniqueId,array(false));
 					}
 				}
 				
