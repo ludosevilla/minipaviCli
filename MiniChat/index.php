@@ -24,7 +24,7 @@ const MINICHAT_CHATGPT = true;	// Activation de chatgpt
 
 //error_reporting(E_USER_NOTICE|E_USER_WARNING);
 error_reporting(E_ERROR|E_WARNING);
-ini_set('display_errors',0);			
+ini_set('display_errors',0);		// Mettre à 1 si l'on veut que les erreurs s'affichent
 
 
 /****************************************************
@@ -80,7 +80,6 @@ indiquera quelle partie du script doit être executé.
 
 Un service peut bien sûr être développé sur plusieurs scripts différents, et pas tout dans un seul énorme fichier PHP (pas pratique si le service est complexe).
 
-
 L'accès à l'émulateur Minitel connecté à MiniPavi est dispo sur http://www.minipavi.fr/emulminitel/
 Pour tester ce script, saisissez le code "MINICHAT"
 
@@ -121,14 +120,13 @@ try {
 	
 	if (MiniPavi\MiniPaviCli::$fctn == 'CNX' || MiniPavi\MiniPaviCli::$fctn == 'DIRECTCNX') {
 		// Nouvelle connexion
-		$step = 0;
-		$context = array();
+		$context = array('step'=>'accueil');
 		MiniPavi\MiniPaviCli::$content=array();
 		trigger_error("[MiniChat] CNX");
 	} else {
 		// Connexion en cours
-		setStep((int)@MiniPavi\MiniPaviCli::$urlParams->step);		// Etape du script à executer, indiqué dans le paramètre 'url' de la requête http
 		$context = @unserialize(MiniPavi\MiniPaviCli::$context);	// Récupération du contexte utilisateur
+		$step = $context['step'];	// Etape du script à executer, indiqué dans le paramètre 'url' de la requête http
 	}
 
 	
@@ -178,10 +176,10 @@ try {
 	$flist = mchat_openListFile();
 	$found=mchat_updateLastAction($flist,MiniPavi\MiniPaviCli::$uniqueId);		// On garde le timestamp du dernier accès, pour faire un nettoyage de temps en temps, au cas ou.
 	@fclose($flist);
-	
-	if (!$found && $step>20) {
+
+	if (!$found && strpos($step,'accueil-')===false) {
 		// L'utilisateur n'est pas dans la liste des connectés et est sur une étape après l'identification: on le renvoi au début
-		$step = 0;
+		$step = 'accueil';
 		$context=array();
 	}
 	
@@ -210,14 +208,13 @@ try {
 	
 	while(true) {
 		switch ($step) {
-			case 0:
+			case 'accueil':
 				// Accueil: affichage partie fixe
 				$vdt = MiniPavi\MiniPaviCli::clearScreen().PRO_MIN.PRO_LOCALECHO_OFF;
 				$vdt.= file_get_contents('MiniChatAcc.vdt');
 				
 				$vdt.= MiniPavi\MiniPaviCli::setPos(12,9);
 				$vdt.= VDT_BGBLUE.' '.MiniPavi\MiniPaviCli::toG2('www.minipavi.fr');
-				
 				
 				$vdt.=MiniPavi\MiniPaviCli::setPos(7,15);
 				$vdt.=VDT_TXTYELLOW.VDT_FDINV.VDT_BLINK.MiniPavi\MiniPaviCli::toG2('> Service animé par ChatGPT <');
@@ -227,7 +224,6 @@ try {
 				$vdt.=' '.VDT_FDINV.' Suite '.VDT_FDNORM;
 				$vdt.=MiniPavi\MiniPaviCli::setPos(2,19);
 				$vdt.=VDT_TXTBLUE.MiniPavi\MiniPaviCli::toG2('Nom sous lequel vous apparaissez');
-				
 				
 				$vdt.=MiniPavi\MiniPaviCli::setPos(2,21);
 				$vdt.=VDT_TXTWHITE.'CV:......................';
@@ -240,52 +236,55 @@ try {
 				$vdt.=MiniPavi\MiniPaviCli::setPos(25,24);
 				$vdt.=VDT_TXTWHITE.'Valider ';
 				$vdt.=VDT_TXTBLACK.VDT_BGGREEN.' Envoi '.VDT_TXTWHITE;
-				setStep(1);
+
+				$step = 'accueil-init-saisie-pseudo';
 				
 				break;		// On continue le script
-			case 1:
+
+			case 'accueil-init-saisie-pseudo':
 				// Accueil: initialisation de la zone de saisie du pseudo
 				// Zone en colonne 13, ligne 18, longueur 10, accepte les touche Envoi et Suite, affiche le curseur,
 				// '.' est le caractère de remplissage, pas de caractère 'alternatif' (pour cacher la saisie, style mot de passe)
 				// pré-remplissage par la valeur du pseudo
 				$cmd=MiniPavi\MiniPaviCli::createInputTxtCmd(13,18,10,MSK_ENVOI|MSK_SUITE,true,'.','',@$context['pseudo']);
-				setStep(10);
+
+				$step = 'accueil-traite-saisie-pseudo';
 				$directCall=false;
 				break 2;	// On arrête le script et on attend une saisie utilisateur ($directCall = false)
-			case 10:
+
+			case 'accueil-traite-saisie-pseudo':
 				// Accueil: traitement de la saisie de la touche de fonction pourt la 1ere zone de saisie (pseudo)
-				
-				
 				$context['pseudo']=@MiniPavi\MiniPaviCli::$content[0];
 				if (MiniPavi\MiniPaviCli::$fctn == 'SUITE') {
 					// initialisation de la zone de saisie du cv
 					$cmd=MiniPavi\MiniPaviCli::createInputTxtCmd(5,21,22,MSK_ENVOI|MSK_RETOUR,true,'.','',@$context['cv']);
-					setStep(11);
+					$step = 'accueil-traite-saisie-cv';
 					$directCall=false;
 					break 2;
 				}
-				
 
 				// C'est donc ENVOI : traitement de la saisie des 2 zones (pseudo + cv)
-				setStep(20);
+				$step = 'accueil-verif-pseudo';
 				break;
-			case 11:
+
+			case 'accueil-traite-saisie-cv':
 				// Accueil: traitement de la saisie de la touche de fonction pourt la 2ème zone de saisie (cv)
 				$context['cv']=@MiniPavi\MiniPaviCli::$content[0];
 				if (MiniPavi\MiniPaviCli::$fctn == 'RETOUR') {
 					// Retour à la zone de saisie du pseudo
-					setStep(1);
+					$step = 'accueil-init-saisie-pseudo';
 					break;
 				}
 				// C'est donc ENVOI : traitement de la saisie des 2 zones (pseudo + cv)
 				// Les 2 lignes suivantes sont inutiles car l'étape 20 suit, mais pour plus de compréhension on les met.
-				setStep(20);
+				$step = 'accueil-verif-pseudo';
 				break;
-			case 20:
+
+			case 'accueil-verif-pseudo':
 				// Accueil: traitement de la saisie du contenu des zones de saisie
 				if (strlen(@$context['pseudo'])<3) {
 					$vdt=MiniPavi\MiniPaviCli::writeLine0('Votre pseudo doit faire 3 car. min.');
-					setStep(1);
+					$step = 'accueil-init-saisie-pseudo';
 					break;
 				}
 				
@@ -296,14 +295,14 @@ try {
 				
 				if ($numCnx>=MINICHAT_MAXCONN) {
 					$vdt=MiniPavi\MiniPaviCli::writeLine0('Le chat est déjà plein ! Désolé !');
-					setStep(1);
+					$step = 'accueil-init-saisie-pseudo';
 					break;
 					
 				}
 				foreach($tCnx as $cnx) {
 					if (@$cnx['id'] != '' && @$cnx['name'] == trim($context['pseudo'])) {
 						$vdt=MiniPavi\MiniPaviCli::writeLine0('Ce pseudo est déjà pris !');
-						setStep(1);
+						$step = 'accueil-init-saisie-pseudo';
 						break 2;
 					}
 				}
@@ -313,9 +312,10 @@ try {
 				@fclose($flist);
 				
 				trigger_error("[MiniChat] ".($numCnx+1)." connecte(s)");
-				setStep(30);
+				$step = 'accueil-infos';
 				break;
-			case 21:
+				
+			case 'liste-partie-fixe':
 				// Liste des connectés : affichage partie fixe
 				$context['page']=0;
 				$context['pagestartindex']=0;
@@ -329,17 +329,18 @@ try {
 				$vdt.=VDT_CRLF.VDT_TXTWHITE.'Pages'.VDT_STARTUNDERLINE.' '.VDT_TXTGREEN.VDT_FDINV.' Suite '.VDT_FDNORM.VDT_STOPUNDERLINE.VDT_TXTWHITE.VDT_BGBLACK;				
 				$vdt.=VDT_STARTUNDERLINE.' '.VDT_TXTGREEN.VDT_FDINV.' Retour '.VDT_FDNORM.VDT_STOPUNDERLINE.VDT_TXTWHITE;								
 				$vdt.=' Sortir'.VDT_STARTUNDERLINE.' '.VDT_TXTGREEN.VDT_FDINV.' Sommaire '.VDT_FDNORM.VDT_STOPUNDERLINE.VDT_TXTWHITE;				
-				setStep(22);				
+
+				$step = 'liste-partie-variable';
 				
 				break;
-			case 22:
+
+			case 'liste-partie-variable':
 				// Liste des connectés : affichage partie variable (liste des connectés) et mise à jour eventuelle des AI chatGPT
 				
 				if (MINICHAT_CHATGPT) {
 					// Mise à jour de la liste des connectés avec chatGPT
 					cGPT_populate();
 				}
-				
 				
 				$vdt.=VDT_CUROFF;
 				
@@ -389,10 +390,11 @@ try {
 				
 				for(;$j<$toclear;$j++)
 					$vdt.=MiniPavi\MiniPaviCli::setPos(1,5+$j).MiniPavi\MiniPaviCli::repeatChar(' ',5).'|'.MiniPavi\MiniPaviCli::repeatChar(' ',10).'|'.MiniPavi\MiniPaviCli::repeatChar(' ',22).VDT_CLRLN;
-				setStep(23);
 				
+				$step = 'liste-init-saisie';
 				break;
-			case 23:
+
+			case 'liste-init-saisie':
 				// Liste des connectés : création de la zone de saisie et affichage nombre de messages en attente
 				$fmsg = mchat_openMsgFile();				
 				$tMsg = mchat_getMsgFor($fmsg,@MiniPavi\MiniPaviCli::$uniqueId);
@@ -408,10 +410,11 @@ try {
 				}
 				
 				$cmd=MiniPavi\MiniPaviCli::createInputTxtCmd(17,22,2,MSK_ENVOI|MSK_SUITE|MSK_RETOUR|MSK_REPETITION|MSK_SOMMAIRE,true,'.','','');
-				setStep(24);
+				$step = 'liste-traite-saisie';
 				$directCall=false;
 				break 2;
-			case 24:
+				
+			case 'liste-traite-saisie':
 				// Liste des connectés : traitement de l'entrée utilisateur
 				if (MiniPavi\MiniPaviCli::$fctn == 'SOMMAIRE') {
 					// Sortie du chat
@@ -421,13 +424,13 @@ try {
 					@fclose($flist);
 					@fclose($fmsg);
 					
-					setStep(0);
+					$step = 'accueil';
 					break;
 				}
 				if (MiniPavi\MiniPaviCli::$fctn == 'REPETITION') {
 					// Réaffichage de la partie variable de la page
 					$vdt=MiniPavi\MiniPaviCli::writeLine0(' ');
-					setStep(22);
+					$step = 'liste-partie-variable';
 					break;
 				}
 				if (MiniPavi\MiniPaviCli::$fctn == 'SUITE') {
@@ -437,13 +440,13 @@ try {
 					@fclose($flist);
 					if (($context['page']+1)*MINICHAT_NUMPARPAGE >= $numCnx) {
 						$vdt=MiniPavi\MiniPaviCli::writeLine0('Dernière page atteinte!');
-						setStep(22); // Et on rafraichit la liste
+						$step = 'liste-partie-variable';
 						break;
 
 					}
 					$context['page']++;
 					$vdt=MiniPavi\MiniPaviCli::writeLine0('');
-					setStep(22);					
+					$step = 'liste-partie-variable';
 					break;
 				}
 				if (MiniPavi\MiniPaviCli::$fctn == 'RETOUR') {
@@ -453,23 +456,24 @@ try {
 					@fclose($flist);
 					if (($context['page']-1)<0) {
 						$vdt=MiniPavi\MiniPaviCli::writeLine0('Première page atteinte!');
-						setStep(22);	// Et on rafraichit la liste
+						
+						$step = 'liste-partie-variable';
 						break;
 					}
 					$context['page']--;
 					$vdt=MiniPavi\MiniPaviCli::writeLine0('');
-					setStep(22);
+					$step = 'liste-partie-variable';
 					break;
 				}
 				if (trim(@MiniPavi\MiniPaviCli::$content[0])=='') {
 					// ENVOI seul: lecture des messages
-					setStep(50);
+					$step = 'lecture-partie-fixe';
 					break;
 				}
 				$numDest = (int)@MiniPavi\MiniPaviCli::$content[0];
 				if ($numDest<=0) {
 					$vdt=MiniPavi\MiniPaviCli::writeLine0('Saisie incorrecte!');
-					setStep(23);					
+					$step = 'liste-init-saisie';
 					break;
 				}
 				$numDest--;
@@ -478,17 +482,17 @@ try {
 				@fclose($flist);
 				if (!isset($tCnx[$numDest]) || $tCnx[$numDest]['id']=='') {
 					$vdt=MiniPavi\MiniPaviCli::writeLine0('Destinataire inconnu!');
-					setStep(23);
+					$step = 'liste-init-saisie';
 					break;
 				}
 				$context['sendiddest'] = $tCnx[$numDest]['id'];
 				$context['sendnamedest'] = $tCnx[$numDest]['name'];
 				$context['sendtypedest'] = $tCnx[$numDest]['type'];
 				unset($context['sendidmsg']);
-				setStep(60);				
+				$step = 'ecriture-partie-fixe';
 				break;
 			
-			case 30:
+			case 'accueil-infos':
 				$vdt.=MiniPavi\MiniPaviCli::setPos(1,10).VDT_CUROFF;
 				for($i=0;$i<13;$i++) {
 					$vdt.=VDT_CLRLN.VDT_CRLF;
@@ -512,16 +516,18 @@ try {
 				$vdt.=MiniPavi\MiniPaviCli::setPos(13,24);
 				$vdt.=VDT_TXTWHITE.MiniPavi\MiniPaviCli::toG2('Accèder au dialogue ');
 				$vdt.=VDT_TXTBLACK.VDT_BGGREEN.' Suite '.VDT_TXTWHITE;
-				setStep(31);
+
+				$step = 'accueil-infos-saisie';
 				break 2;
-			case 31:
+
+			case 'accueil-infos-saisie':
 				if (MiniPavi\MiniPaviCli::$fctn == 'SUITE') {
-					setStep(21);
+					$step = 'liste-partie-fixe';
 					break;
 				}
 				break 2;
 				
-			case 50:
+			case 'lecture-partie-fixe':
 				// Lecture des messages: Affichage partie fixe
 				$fmsg = mchat_openMsgFile();
 				$tMsg = mchat_getMsgFor($fmsg,@MiniPavi\MiniPaviCli::$uniqueId);
@@ -530,10 +536,11 @@ try {
 				if (count($tMsg)<1) {
 					$vdt=MiniPavi\MiniPaviCli::writeLine0('Aucun message en attente!');
 					if (@$context['frommsgsend']==1) {
-						setStep(21);
+						$step = 'liste-partie-fixe';
 						unset($context['frommsgsend']);
-					} else
-						setStep(23);
+					} else {
+						$step = 'liste-init-saisie';
+					}
 					break;
 					
 				}
@@ -548,9 +555,10 @@ try {
 				$vdt.=VDT_CRLF.VDT_TXTWHITE.'Envoi message'.VDT_STARTUNDERLINE.' '.VDT_TXTGREEN.VDT_FDINV.' Envoi '.VDT_FDNORM.VDT_STOPUNDERLINE;
 				$vdt.=VDT_TXTWHITE.' Sortir'.VDT_STARTUNDERLINE.' '.VDT_TXTGREEN.VDT_FDINV.' Sommaire '.VDT_FDNORM.VDT_STOPUNDERLINE;
 
-				setStep(51);				
+				$step = 'lecture-partie-variable';
 				break;
-			case 51:
+
+			case 'lecture-partie-variable':
 				// Lecture des messages: Affichage du message
 				$vdt.=VDT_CUROFF.VDT_TXTWHITE;
 				$vdt.=MiniPavi\MiniPaviCli::setPos(13,1);
@@ -573,24 +581,26 @@ try {
 				$context['sendidmsg']=$tMsg[0]['idmsg'];	// On garde l'identifiant du message
 				unset($context['sendiddest']);				// Suppression de l'éventuelle id destinataire initialisé lors de l'envoi direct d'un message
 
-				setStep(52);				
+				$step = 'ecriture-init-saisie';
 				break;
-			case 52:
+
+			case 'ecriture-init-saisie':
 				// Lecture-écriture des messages : création de la zone de saisie
 				// Zone en colonne 1, ligne 16, longueur 40, heuteur (lignes) 6, accepte les touche Envoi et Suite, affiche le curseur,
 				// ' ' est le caractère de remplissage
 				
 				$cmd=MiniPavi\MiniPaviCli::createInputMsgCmd(1,16,40,6,MSK_ENVOI|MSK_SOMMAIRE,true,' ');
-				setStep(53);
+				$step = 'ecriture-traite-saisie';
 				$directCall=false;
 				break 2;
-			case 53:
+
+			case 'ecriture-traite-saisie':
 				// Lecture-écriture des messages : traitement de la saisie utilisateur
 				if (MiniPavi\MiniPaviCli::$fctn == 'SOMMAIRE') {
 					// Abandon de saisie, retour à la liste
 					unset($context['sendidmsg']);
 					unset($context['sendiddest']);
-					setStep(21);
+					$step = 'liste-partie-fixe';
 					break;
 				}
 				
@@ -602,7 +612,7 @@ try {
 					if (count($tMsg)!=1) {
 						// Message à disparu, ne devrait pas arriver
 						unset($context['sendidmsg']);
-						setStep(21);
+						$step = 'liste-partie-fixe';
 						break;
 					}
 					$fmsg = mchat_openMsgFile();
@@ -648,35 +658,31 @@ try {
 						$cmd = MiniPavi\MiniPaviCli::createBackgroundCallCmd($tUrl,$tTime,$tUniqueId,array(false));
 					}
 				}
-				
-				
-				
 
 				if (isset($context['sendidmsg'])) {
 					// La saisie du message fait suite à la lecture d'un message reçu: on passa au message suivant
 					unset($context['sendidmsg']);
 					unset($context['sendiddest']);
 					unset($context['sendtypedest']);
-					setStep(50);
+					$step = 'lecture-partie-fixe';
 					$directCall=true;
 					$context['frommsgsend']=1;
 					// On ne pars pas directement à l'étape 50 (message suivant) car autrement la commande d'envoi push ne partira pas
 					// On envoi donc à MiniPavi avec demande d'appel direct de l'url suivante (sans attendre de saisie utilisateur)
 					break 2;
-					
 				} else {
 					// La saisie du message fait suite à la création d'un nouveau message: on retourne à la liste
 					unset($context['sendiddest']);
 					unset($context['sendnamedest']);
 					unset($context['sendtypedest']);
-					setStep(21);
+					$step = 'liste-partie-fixe';
 					$directCall=true;
 					// On ne pars pas directement à l'étape 21 (liste) car autrement la commande d'envoi push ne partira pas
 					// On envoi donc à MiniPavi avec demande d'appel direct de l'url suivante (sans attendre de saisie utilisateur)
 					break 2;
 				}
 
-			case 60:
+			case 'ecriture-partie-fixe':
 				// Envoi d'un nouveau messages: Affichage partie fixe
 				$vdt= MiniPavi\MiniPaviCli::clearScreen();
 				$vdt.=MiniPavi\MiniPaviCli::setPos(1,15).VDT_TXTYELLOW.VDT_BGBLUE.MiniPavi\MiniPaviCli::toG2(' Message à : '.ucfirst(strtolower($context['sendnamedest'])) ).VDT_CLRLN;
@@ -686,7 +692,7 @@ try {
 				$vdt.=VDT_CRLF.VDT_TXTWHITE.'Envoi message'.VDT_STARTUNDERLINE.' '.VDT_TXTGREEN.VDT_FDINV.' Envoi '.VDT_FDNORM.VDT_STOPUNDERLINE;
 				$vdt.=VDT_TXTWHITE.' Sortir'.VDT_STARTUNDERLINE.' '.VDT_TXTGREEN.VDT_FDINV.' Sommaire '.VDT_FDNORM.VDT_STOPUNDERLINE;
 
-				setStep(52);	// La saisie d'un mouveau message est commune avec la réponse à un message
+				$step = 'ecriture-init-saisie';
 				break;
 				
 			default:
@@ -696,12 +702,10 @@ try {
 	}
 	
 	// Url à appeller lors de la prochaine saisie utilisateur (ou sans attendre si directCall=true)
-
-	$nextPage=$prot."://".$_SERVER['HTTP_HOST']."".$_SERVER['PHP_SELF'].'?step='.$step;
-//mail("ludojoey@astroz.com","envoi",print_r($cmd,true));
+	$context['step']=$step;
+	$nextPage=$prot."://".$_SERVER['HTTP_HOST']."".$_SERVER['PHP_SELF'];
 	// On envoi tout cela à la passerelle
 	MiniPavi\MiniPaviCli::send($vdt,$nextPage,serialize($context),true,$cmd,$directCall);
-	
 } catch (Exception $e) {
 	throw new Exception('Erreur MiniPavi '.$e->getMessage());
 }
