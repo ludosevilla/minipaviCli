@@ -14,25 +14,25 @@ require "france24Functions.php";
 
 //error_reporting(E_USER_NOTICE|E_USER_WARNING);
 error_reporting(E_ERROR);
-ini_set('display_errors',0);
+ini_set('display_errors',0);	// Mettre à 1 si l'on veut que les erreurs s'affichent
 
 try {
 	MiniPavi\MiniPaviCli::start();
 
 	if (MiniPavi\MiniPaviCli::$fctn == 'CNX' || MiniPavi\MiniPaviCli::$fctn == 'DIRECTCNX') {
 		// Initialisation
-		$step = 0;
+		$step = 'accueil';
 		$context = array();
 		MiniPavi\MiniPaviCli::$content=array();
 		trigger_error("[MiniFrance24] CNX");
 		
 	} else {
-		$step=(int)@MiniPavi\MiniPaviCli::$urlParams->step;		// Etape du script à executer, indiqué dans le paramètre 'url' de la requête http
 		$context = unserialize(MiniPavi\MiniPaviCli::$context);		// Récupération du contexte utilisateur
+		$step = $context['step'];	// Etape du script à executer, indiqué dans le paramètre 'url' de la requête http
 	}
 
 	
-	if (MiniPavi\MiniPaviCli::$fctn == 'FIN' || MiniPavi\MiniPaviCli::$fctn == 'FCTN?') {
+	if (MiniPavi\MiniPaviCli::$fctn == 'FIN') {
 			// Deconnexion
 			trigger_error("[MiniFrance24] DECO");
 			exit;
@@ -44,7 +44,7 @@ try {
 	$directCall = false;
 	while(true) {
 		switch ($step) {
-			case 0:
+			case 'accueil':
 				// Accueil
 				$vdt = MiniPavi\MiniPaviCli::clearScreen().PRO_MIN.PRO_LOCALECHO_OFF;
 				$vdt.= file_get_contents('france24-2.vdt');
@@ -56,20 +56,22 @@ try {
 				$vdt.=MiniPavi\MiniPaviCli::setPos(1,24);
 				$vdt.=VDT_G0.VDT_TXTWHITE.VDT_BGBLACK.MiniPavi\MiniPaviCli::toG2(" Pour lire les dépêches, tapez ").VDT_FDINV." Suite ".VDT_FDNORM.VDT_CLRLN;
 
-				$step=5;
+				$step = 'accueil-saisie';
 				$directCall=false;
 				break 2;	// On arrête le script et on attend une saisie utilisateur ($directCall = false)
 				
-			case 5:
+
+			case 'accueil-saisie':
 				if ( MiniPavi\MiniPaviCli::$fctn == 'REPETITION') {
-					$step = 0;
+					$step = 'accueil';
 					break;
 				}
 				if ( MiniPavi\MiniPaviCli::$fctn != 'SUITE') {
 					break 2;
 				}
 				
-			case 10:
+
+			case 'rubriques':
 				// Affichage des différentes rubriques
 				$vdt=VDT_CLR.VDT_CUROFF.MiniPavi\MiniPaviCli::setPos(1,2);
 				$vdt.=VDT_SZDBLH.VDT_TXTWHITE.VDT_BGBLUE.' FRANCE 24'.VDT_TXTBLACK.chr(hexdec('7D')).VDT_TXTWHITE.VDT_BGRED.' LES NEWS DE LA PLANETE'.VDT_CLRLN;
@@ -131,30 +133,30 @@ try {
 				$vdt.=MiniPavi\MiniPaviCli::setPos(10,24);
 				$vdt.=VDT_TXTWHITE.MiniPavi\MiniPaviCli::toG2(" Entrez un numéro:  + ").VDT_FDINV." Envoi ".VDT_FDNORM.VDT_CLRLN;
 
-			case 15:
+			case 'rubriques-init-saisie':
 				// Initialisation de la zone de saisie
 				$cmd=MiniPavi\MiniPaviCli::createInputTxtCmd(28,24,1,MSK_ENVOI|MSK_SOMMAIRE,true,' ','');
-				$step=20;
+				$step = 'rubriques-traite-saisie';
 				$directCall=false;
 				break 2;
 				
-			case 20:
+			case 'rubriques-traite-saisie':
 				// Traitement de la saisie
 				if (MiniPavi\MiniPaviCli::$fctn == 'SOMMAIRE') {
-					$step = 0;
+					$step = 'accueil';
 					break;
 				}
 				$choix = (int)(@MiniPavi\MiniPaviCli::$content[0]);
 				if ($choix<1 || $choix>7) {
 					$vdt=MiniPavi\MiniPaviCli::writeLine0('Choix incorrect!');
-					$step=15;
+					$step = 'rubriques-init-saisie';
 					break;
 				}	
 				
 				$tNews = getNews($choix-1);
 				if (!is_array($tNews) || count($tNews)<1) {
 					$vdt=MiniPavi\MiniPaviCli::writeLine0('Aucune info!');
-					$step=15;
+					$step = 'rubriques-init-saisie';
 					break;
 				}
 				
@@ -162,7 +164,7 @@ try {
 				$context['title']=$urlFlux[$choix-1]['name'];
 				$context['page']=0;
 				
-			case 25:
+			case 'titres-partie-fixe':
 				// Affichage des titres d'un thème donné, zone fixe
 				$vdt=VDT_CLR.VDT_CUROFF.MiniPavi\MiniPaviCli::setPos(1,2);
 				$vdt.=VDT_SZDBLH.VDT_TXTWHITE.VDT_BGBLUE.' FRANCE 24'.VDT_TXTBLACK.chr(hexdec('7D')).VDT_TXTWHITE.VDT_BGRED.' '.MiniPavi\MiniPaviCli::toG2($context['title']).VDT_CLRLN;
@@ -173,7 +175,7 @@ try {
 				$context['currnews']=0;
 				
 				
-			case 26:
+			case 'titres-partie-variable':
 				// Affichage des titres (5 maximum), zone variable
 				$vdt.=VDT_CUROFF;
 				$start = $context['page']*5;
@@ -190,16 +192,16 @@ try {
 					$i++;
 				}
 				
-			case 30:
+			case 'titres-init-saisie':
 				// Initialisation de la zone de saisie
 				$cmd=MiniPavi\MiniPaviCli::createInputTxtCmd(16,24,2,MSK_ENVOI|MSK_SUITE|MSK_RETOUR|MSK_SOMMAIRE,true,' ','');
 				$directCall=false;
-				$step = 35;
+				$step = 'titres-traite-saisie';
 				break 2;
 				
-			case 35:
+			case 'titres-traite-saisie':
 				if (MiniPavi\MiniPaviCli::$fctn == 'SOMMAIRE') {
-					$step = 10;
+					$step = 'rubriques';
 					break;
 				}
 				// L'utilisateur veut changer de page
@@ -209,14 +211,14 @@ try {
 					if (MiniPavi\MiniPaviCli::$fctn == 'SUITE') {
 						if ($nextCurrNews>=$numNews) {
 							$vdt=MiniPavi\MiniPaviCli::writeLine0('Dernière page');
-							$step=30;
+							$step = 'titres-init-saisie';
 							break;
 						}
 						$context['page']++;
 					} else {
 						if ($context['page']==0) {
 							$vdt=MiniPavi\MiniPaviCli::writeLine0('Première page');
-							$step=30;
+							$step = 'titres-init-saisie';
 							break;
 						}
 						$context['page']--;
@@ -224,19 +226,19 @@ try {
 					for($i=0;$i<21;$i++) {
 						$vdt.=MiniPavi\MiniPaviCli::setPos(1,3+$i).VDT_CLRLN;
 					}
-					$step = 26;
+					$step = 'titres-partie-variable';
 					break;
 				}
 				// L'utilisateur veut lire une news
 				$choix = (int)(@MiniPavi\MiniPaviCli::$content[0]);
 				if ($choix<1 || $choix>count($context['tnews'])) {
 					$vdt=MiniPavi\MiniPaviCli::writeLine0('Choix incorrect!');
-					$step=30;
+					$step = 'titres-init-saisie';
 					break;
 				}	
 				$context['currnews']=$choix-1;
 				
-			case 40:
+			case 'news-partie-fixe':
 				// Affichage d'une news. Partie fixe
 				$vdt=VDT_CLR.VDT_CUROFF.MiniPavi\MiniPaviCli::setPos(1,2);
 				$vdt.=VDT_SZDBLH.VDT_TXTWHITE.VDT_BGBLUE.' FRANCE 24'.VDT_TXTBLACK.chr(hexdec('7D')).VDT_TXTWHITE.VDT_BGRED.' '.MiniPavi\MiniPaviCli::toG2($context['title']).VDT_CLRLN;
@@ -244,7 +246,7 @@ try {
 				$vdt.=MiniPavi\MiniPaviCli::setPos(1,24);
 				$vdt.=VDT_TXTRED." Suite ".VDT_FDINV.' '.VDT_FDNORM." Retour ".VDT_FDINV.' ou '.VDT_FDNORM." Sommaire ".VDT_FDINV.VDT_CLRLN;
 				
-			case 41:
+			case 'news-partie-variable':
 				// Affichage d'une news. Partie variable
 				$vdt.=VDT_CUROFF;
 				$vdt.=MiniPavi\MiniPaviCli::setPos(1,4);
@@ -259,13 +261,13 @@ try {
 					$vdt.=VDT_CLRLN.VDT_TXTYELLOW.MiniPavi\MiniPaviCli::toG2($infoTxt[$i]);
 				}
 			
-				$step = 45;
+				$step = 'news-traite-saisie';
 				break 2;
 				
-			case 45:
+			case 'news-traite-saisie':			
 				// Affichage d'une news. Traitement de la saisie (uniquement touche de fonction)
 				if (MiniPavi\MiniPaviCli::$fctn == 'SOMMAIRE') {
-					$step = 25;
+					$step = 'titres-partie-fixe';
 					break;
 				}
 				if (MiniPavi\MiniPaviCli::$fctn == 'SUITE' || MiniPavi\MiniPaviCli::$fctn == 'RETOUR') {				
@@ -274,14 +276,14 @@ try {
 					if (MiniPavi\MiniPaviCli::$fctn == 'SUITE') {
 						if ($context['currnews']+1 >= $numNews) {
 							$vdt=MiniPavi\MiniPaviCli::writeLine0('Dernière news');
-							$step=45;
+							$step = 'news-traite-saisie';
 							break 2;
 						}
 						$context['currnews']++;
 					} else {
 						if ($context['currnews']-1 <0) {
 							$vdt=MiniPavi\MiniPaviCli::writeLine0('Première news');
-							$step=45;
+							$step = 'news-traite-saisie';
 							break 2;
 						}
 						$context['currnews']--;
@@ -289,7 +291,7 @@ try {
 					for($i=0;$i<21;$i++) {
 						$vdt.=MiniPavi\MiniPaviCli::setPos(1,3+$i).VDT_CLRLN;
 					}
-					$step = 41;
+					$step = 'news-partie-variable';
 					break;
 				}
 				// On ne fait rien
@@ -308,8 +310,9 @@ try {
 	} else
 		$prot='http';
 
-	$nextPage=$prot."://".$_SERVER['HTTP_HOST']."".$_SERVER['PHP_SELF'].'?step='.$step;
+	$nextPage=$prot."://".$_SERVER['HTTP_HOST']."".$_SERVER['PHP_SELF'];
 
+	$context['step'] = $step;
 	MiniPavi\MiniPaviCli::send($vdt,$nextPage,serialize($context),true,$cmd,$directCall);
 } catch (Exception $e) {
 	throw new Exception('Erreur MiniPavi '.$e->getMessage());
