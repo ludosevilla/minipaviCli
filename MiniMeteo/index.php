@@ -21,16 +21,16 @@ try {
 
 	if (MiniPavi\MiniPaviCli::$fctn == 'CNX' || MiniPavi\MiniPaviCli::$fctn == 'DIRECTCNX') {
 		// Initialisation
-		$step = 0;
+		$step = 'accueil';
 		$context = array();
 		MiniPavi\MiniPaviCli::$content=array();
 		trigger_error("[METEO] CNX");
 	} else {
-		$step=(int)@MiniPavi\MiniPaviCli::$urlParams->step;		// Etape du script à executer, indiqué dans le paramètre 'url' de la requête http
 		$context = unserialize(MiniPavi\MiniPaviCli::$context);		// Récupération du contexte utilisateur
+		$step = $context['step'];									// Etape du script à executer, indiqué dans le paramètre 'url' de la requête http
 	}
 	
-	if (MiniPavi\MiniPaviCli::$fctn == 'FIN' || MiniPavi\MiniPaviCli::$fctn == 'FCTN?') {
+	if (MiniPavi\MiniPaviCli::$fctn == 'FIN') {
 			// Deconnexion
 			trigger_error("[METEO] DECO");
 			exit;
@@ -41,27 +41,30 @@ try {
 	$directCall = false;
 	while(true) {
 		switch ($step) {
-			case 0:
+			case 'accueil':
 				// Accueil
 				$context['ville']='';
 				$vdt =MiniPavi\MiniPaviCli::clearScreen().PRO_MIN.PRO_LOCALECHO_OFF;
+				$vdt.=MiniPavi\MiniPaviCli::webMediaSound("http://www.minipavi.fr/minimeteo/jinglemeteo.mp3");
 				$vdt.= file_get_contents('meteoacc.vdt');
 				$vdt.=MiniPavi\MiniPaviCli::writeCentered(23,'Rechercher une ville (3 lettres min.)');
 				$vdt.=MiniPavi\MiniPaviCli::setPos(31,24);
 				$vdt.=VDT_TXTGREEN.VDT_STARTUNDERLINE.' '.VDT_FDINV.MiniPavi\MiniPaviCli::toG2(' Envoi ').VDT_TXTWHITE.VDT_FDNORM.VDT_STOPUNDERLINE.' ';
 				$vdt.=MiniPavi\MiniPaviCli::writeLine0('Données fournies par OPEN METEO');				
 
-			case 2:
+
+			case 'accueil-init-saisie':
 				// Initialisation de la zone de saisie
 				$cmd=MiniPavi\MiniPaviCli::createInputTxtCmd(2,24,29,MSK_ENVOI|MSK_REPETITION,true,'.','',@$context['ville']);
-				$step=5;
+				$step='accueil-traite-saisie';
 				$directCall=false;
 				break 2;	// On arrête le script et on attend une saisie utilisateur ($directCall = false)
 				
-			case 5:
+
+			case 'accueil-traite-saisie':			
 				// Traitement de la saisie
 				if ( MiniPavi\MiniPaviCli::$fctn == 'REPETITION') {
-					$step = 0;
+					$step='accueil';
 					break;
 				}
 				
@@ -70,33 +73,34 @@ try {
 				
 				if (strlen($ville)<3) {
 					$vdt=MiniPavi\MiniPaviCli::writeLine0('Entrer mini. 3 lettres !');
-					$step=2;
+					$step='accueil-init-saisie';
 					break;
 				}
 				
 				$vdt=MiniPavi\MiniPaviCli::writeLine0('Recherche en cours...');
-				$step=7;
+				$step='recherche-ville';
 				$directCall=true;
 				break 2;	// Envoi du message d'attente (et donc arrêt du script) et on passe directement à l'étape 7 par un appel direct au script (sans attente d'entrée utilisateur)
 				
-			case 7:
+				case 'recherche-ville':
 				// Recherche des villes disponibles
 				$tVilles = GetCities($context['ville']);
 				if ($tVilles === false || count($tVilles)<1) {
 					$vdt=MiniPavi\MiniPaviCli::writeLine0('Aucune ville trouvée. Réessayez!');
-					$step=2;
+					$step='accueil-init-saisie';
 					break;
 				}
 				$context['tvilles'] = $tVilles;
 				
-			case 8:
+			case 'liste-ville-init':			
 				// Affichage de la liste des villes, zone fixe
 				
 				$context['page']=0;
 				
 				// On sépare l'initialisation et l'affiche pour pouvoir rafraichier l'affichage (touche REPETITION)
 				// sans réinitialiser la page courante, ou lorsque l'on vient d'une page "ville"
-			case 9:
+
+			case 'liste-ville-zone-fixe':						
 				// Affichage de la liste des villes, zone fixe
 				$vdt=MiniPavi\MiniPaviCli::clearScreen();
 				$vdt.= file_get_contents('meteofondpage.vdt');
@@ -114,14 +118,15 @@ try {
 				else 
 					$vdt.=VDT_TXTYELLOW.MiniPavi\MiniPaviCli::toG2("Minitel n'a trouvé qu'une ville !");
 				
-			case 10:
+
+			case 'liste-ville-zone-variable':									
 				// Affichage de la partie variable
 				$page = (int)$context['page'];
 				$start = $page * 6;						// 5 villes par pages maximum
 				if ($start> count($context['tvilles']) || $start<0) {
 					// Ne devrait pas arriver
 					$vdt=MiniPavi\MiniPaviCli::writeLine0('Page hors bornes');
-					$step=2;
+					$step='accueil-init-saisie';
 					break;
 				}
 
@@ -148,22 +153,23 @@ try {
 					$vdt.=MiniPavi\MiniPaviCli::setPos(1,$l).VDT_CLRLN;
 				}
 
-			case 12:
+
+			case 'liste-ville-init-saisie':												
 				// Initialisation de la zone de saisie
 				$cmd=MiniPavi\MiniPaviCli::createInputTxtCmd(2,24,2,MSK_ENVOI|MSK_SUITE|MSK_RETOUR|MSK_SOMMAIRE|MSK_REPETITION,true,'.','');
-				$step=14;
+				$step='liste-ville-traite-saisie';
 				$directCall=false;
 				break 2;
 
-			case 14:
+			case 'liste-ville-traite-saisie':															
 				// Traitement de la saisie utilisateur
 				if (MiniPavi\MiniPaviCli::$fctn == 'SOMMAIRE') {
-					$step = 0;
+					$step='accueil';
 					break;
 				}
 				
 				if (MiniPavi\MiniPaviCli::$fctn == 'REPETITION') {
-					$step = 9;
+					$step = 'liste-ville-zone-fixe';
 					break;
 				}
 				
@@ -172,21 +178,21 @@ try {
 				if (MiniPavi\MiniPaviCli::$fctn == 'RETOUR') {
 					if ($page==0) {
 						$vdt=MiniPavi\MiniPaviCli::writeLine0('Première page atteinte');
-						$step=12;
+						$step = 'liste-ville-init-saisie';
 						break;
 					}
 					$context['page'] = $page-1;
-					$step=10;
+					$step = 'liste-ville-zone-variable';
 					break;
 				}
 				if (MiniPavi\MiniPaviCli::$fctn == 'SUITE') {
 					if ((6*($page+1)) >= count($context['tvilles'])) {
 						$vdt=MiniPavi\MiniPaviCli::writeLine0('Dernière page atteinte');
-						$step=12;
+						$step = 'liste-ville-init-saisie';
 						break;
 					}
 					$context['page'] = $page+1;
-					$step=10;
+					$step = 'liste-ville-zone-variable';
 					break;
 				}
 				
@@ -196,24 +202,24 @@ try {
 				
 				if ($choix<1 || $choix > count($context['tvilles'])) {
 					$vdt=MiniPavi\MiniPaviCli::writeLine0('Choix incorrect');
-					$step=12;
+					$step = 'liste-ville-init-saisie';
 					break;
 				}
 
 				$context['idxville'] = $choix-1;
 
 				$vdt=MiniPavi\MiniPaviCli::writeLine0('Minitel cherche les prévisions...');
-				$step=16;
+				$step = 'recherche-previsions';
 				$directCall=true;
 				break 2;	// Envoi du message d'attente (et donc arrêt du script) et on passe directement à l'étape 16 par un appel direct au script (sans attente d'entrée utilisateur)
 
-			case 16:
+			case 'recherche-previsions':															
 				// Récupération de prévisions
 				$r = GetForecast($context['tvilles'][$context['idxville']]['latitude'],$context['tvilles'][$context['idxville']]['longitude'],$context['tvilles'][$context['idxville']]['timezone'],$tNow,$tFuture);
 
 				if ($r === false) {
 					$vdt=MiniPavi\MiniPaviCli::writeLine0('Aucune prévision trouvée...');
-					$step=12;
+					$step = 'liste-ville-init-saisie';
 					break;
 				}
 				
@@ -224,7 +230,7 @@ try {
 				$context['tnow'] = $tNow;
 				$context['tfuture'] = $tFuture;
 				
-			case 17:
+			case 'temps-actuel-affiche':																		
 				// Affichage de l'accueil prévisions d'une ville
 				$tNow = $context['tnow'];
 				$tFuture = $context['tfuture'];
@@ -296,33 +302,34 @@ try {
 					$vdt.=MiniPavi\MiniPaviCli::toG2("    Prévisions ").VDT_FDINV." Suite ".VDT_FDNORM." ou ".VDT_FDINV." Sommaire ".VDT_FDNORM." ".VDT_CLRLN;
 				else $vdt.=MiniPavi\MiniPaviCli::toG2(" Prév. ").VDT_FDINV." Suite ".VDT_FDNORM." Q.air. ".VDT_FDINV." Guide ".VDT_FDNORM.' ou '.VDT_FDINV." Som. ".VDT_FDNORM." ";
 				
-				$step = 18;
+				$step = 'temps-actuel-traite-saisie';
 				break 2;
 			
 			case 18:
+			case 'temps-actuel-traite-saisie':																		
 				// Traitement du choix de l'utilisateur
 				// Seule une touche de fonction est attendue: pas besoin de créer une zone de saisie, toutes les touches de fonctions sont acceptées
 				if (MiniPavi\MiniPaviCli::$fctn == 'SOMMAIRE') {
-					$step = 0;
+					$step = 'accueil';
 					break;
 				}
 				if (MiniPavi\MiniPaviCli::$fctn == 'REPETITION') {
-					$step = 17;
+					$step = 'temps-actuel-affiche';
 					break;
 				}
 				if (MiniPavi\MiniPaviCli::$fctn == 'SUITE') {
-					$step = 19;
+					$step = 'previsions';
 					break;
 				}
 				if ($context['tquality'] !== false && MiniPavi\MiniPaviCli::$fctn == 'GUIDE') {
-					$step = 30;
+					$step = 'qualite-air';
 					break;
 				}
 				
 				// Touche de fonction inopérante, on ne fait rien				
 				break 2;
 				
-			case 19:
+			case 'previsions':																					
 				// Accueil prévisions
 				$tFuture = $context['tfuture'];
 				
@@ -360,26 +367,26 @@ try {
 				$vdt.=MiniPavi\MiniPaviCli::setPos(1,24).VDT_BGRED;
 				$vdt.=MiniPavi\MiniPaviCli::toG2("    Précédent ").VDT_FDINV." Retour ".VDT_FDNORM." ou ".VDT_FDINV." Sommaire ".VDT_FDNORM." ".VDT_CLRLN;
 				
-				$step = 20;
+				$step = 'previsions-traite-saisie';
 				break 2;
 				
-			case 20:
+			case 'previsions-traite-saisie':																								
 				if (MiniPavi\MiniPaviCli::$fctn == 'SOMMAIRE') {
-					$step = 0;
+					$step = 'accueil';
 					break;
 				}
 				if (MiniPavi\MiniPaviCli::$fctn == 'REPETITION') {
-					$step = 19;
+					$step = 'previsions';
 					break;
 				}
 				if (MiniPavi\MiniPaviCli::$fctn == 'RETOUR') {
-					$step = 17;
+					$step = 'temps-actuel-affiche';
 					break;
 				}
 				// Touche de fonction inopérante, on ne fait rien				
 				break 2;
 			
-			case 30:
+			case 'qualite-air':																											
 				// Accueil qualité de l'air
 				$vdt.=MiniPavi\MiniPaviCli::setPos(1,5);
 				$vdt.=VDT_TXTBLUE.VDT_FDINV;
@@ -476,20 +483,20 @@ try {
 				$vdt.=MiniPavi\MiniPaviCli::setPos(1,24).VDT_BGRED;
 				$vdt.=MiniPavi\MiniPaviCli::toG2("    Précédent ").VDT_FDINV." Retour ".VDT_FDNORM." ou ".VDT_FDINV." Sommaire ".VDT_FDNORM." ".VDT_CLRLN;
 
-				$step =32;
+				$step = 'qualite-air-traite-saisie';
 				break 2;
 
-			case 32:
+			case 'qualite-air-traite-saisie':																														
 				if (MiniPavi\MiniPaviCli::$fctn == 'SOMMAIRE') {
-					$step = 0;
+					$step = 'accueil';
 					break;
 				}
 				if (MiniPavi\MiniPaviCli::$fctn == 'REPETITION') {
-					$step = 30;
+					$step = 'qualite-air';
 					break;
 				}
 				if (MiniPavi\MiniPaviCli::$fctn == 'RETOUR') {
-					$step = 17;
+					$step = 'temps-actuel-affiche';
 					break;
 				}
 				
@@ -509,8 +516,10 @@ try {
 	} else
 		$prot='http';
 
-	$nextPage=$prot."://".$_SERVER['HTTP_HOST']."".$_SERVER['PHP_SELF'].'?step='.$step;
+	$nextPage=$prot."://".$_SERVER['HTTP_HOST']."".$_SERVER['PHP_SELF'];
 
+	$context['step']=$step;
+	
 	MiniPavi\MiniPaviCli::send($vdt,$nextPage,serialize($context),true,$cmd,$directCall);
 } catch (Exception $e) {
 	throw new Exception('Erreur MiniPavi '.$e->getMessage());
