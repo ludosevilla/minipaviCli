@@ -644,10 +644,7 @@ class MiniPaviCli {
 		'I','o','a',"'",' ','n','c','r','y','s','i','a'
 		);
 		
-		foreach($tabAcc as $k=>$c) {
-			$str=mb_ereg_replace($c,$tabG2[$k], $str);
-		}
-		return $str;
+		return str_replace($tabAcc, $tabG2, $str);	
 	}
 	
 }
