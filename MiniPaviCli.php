@@ -14,6 +14,7 @@
  * 16/03/2024 : Modifications concernant l'appel direct d'une url (ajout DIRECTCNX) et ajout des commandes createConnectToExtCmd et createConnectToTlnCmd
  * 17/04/2024 : Modifications concernant createBackgroundCallCmd: ajout de la simulation utilisateur 
  * 19/08/2024 : Ajout fonctions "WebMedia"
+ * 11/10/2024 : Ajout commande "createInputFormCmd"
  *
  */
  
@@ -235,7 +236,7 @@ class MiniPaviCli {
 
 	
 	/*************************************************
-	// Cré une commande 'InputMsg' de saisie d'une ligne, validée par n'mporte quelle touche de fonction (sauf Annulation et Correction)
+	// Cré une commande 'InputMsg' de saisie de plusieurs lignes, validée par n'mporte quelle touche de fonction (sauf Suite, Retour, Annulation et Correction)
 	// posX: position X de la zone de saisie
 	// posY: position Y de la zone de saisie
 	// w: longueur de la zone de saisie
@@ -279,6 +280,69 @@ class MiniPaviCli {
 		$cmd['COMMAND']['param']['y']=$posY;
 		$cmd['COMMAND']['param']['w']=$width;
 		$cmd['COMMAND']['param']['h']=$height;
+		$cmd['COMMAND']['param']['spacechar']=$spaceChar;
+		$cmd['COMMAND']['param']['prefill']=$preFill;
+		if ($cursor)
+			$cmd['COMMAND']['param']['cursor']='on';
+		else $cmd['COMMAND']['param']['cursor']='off';
+		$cmd['COMMAND']['param']['validwith']=(int)$validWith;
+		return $cmd;
+	}
+
+
+
+	/*************************************************
+	// Cré une commande 'InputForm' de saisie d'un formulaire, validée par n'mporte quelle touche de fonction (sauf Suite, Retour, Annulation et Correction)
+	// posX: tableau des positions X de chaque champs de saisie
+	// posY: tableau des positions Y de chaque champs de saisie
+	// length: tableau des longueur de chaque champs de saisie
+	// validWith: valide la saisie uniquement avec les touches de fonctions indiquées	
+	// cursor: active l'affichage du curseur
+	// spaceChar: caractère utilisée pour afficher la zone de saisie
+	// preFill: tableau du texte de pré-remplissage de chaque ligne
+	**************************************************/
+
+	static function createInputFormCmd($posX=array(1),$posY=array(1),$length=array(10),$validWith=MSK_ENVOI,$cursor=true,$spaceChar='.',$preFill=array()) {
+		
+		if (is_array($posX) && is_array($posY) && is_array($length)) {
+			$cX = count($posX);
+			$cY = count($posY);
+			$cL = count($length);
+		} else {
+			$cX = $cY = $cL = 0;
+		}
+		
+		if ($cX<1 || $cX>30 || $cX != $cY || $cY != $cL) {
+			$posX = array(1);
+			$posY = array(1);
+			$length = array(10);
+			$cX = 1;
+		} else {
+			foreach($posX as $k=>$v) {
+				if ($posX[$k]<1 || $posX[$k]>40)
+					$posX[$k] = 1;
+				if ($posY[$k]<1 || $posY[$k]>24)
+					$posY[$k] = 1;
+				if ($length[$k]<1 || $length[$k]>41-$posX[$k])		
+					$length[$k] = 41-$posX[$k];
+			}
+		}
+		
+		if (!is_array($preFill))
+			$preFill = array();
+		
+		if (count($preFill)>0) {
+			array_splice($preFill, $cX);
+			foreach($preFill as $numLine=>$line) {
+				$preFill[$numLine] = mb_substr($line,0,$length[$numLine]);
+			}
+		}
+		
+		$cmd=array();
+		$cmd['COMMAND']['name']='InputForm';
+		$cmd['COMMAND']['param']['x']=$posX;
+		$cmd['COMMAND']['param']['y']=$posY;
+		$cmd['COMMAND']['param']['l']=$length;
 		$cmd['COMMAND']['param']['spacechar']=$spaceChar;
 		$cmd['COMMAND']['param']['prefill']=$preFill;
 		if ($cursor)
