@@ -10,7 +10,6 @@
  * A demander sur https://numerique.sncf.com/startup/api/
  */
 
-
 define('MINISNCF_KEY','Indiquez ici votre clé a l API SNCF');
 
 
@@ -25,7 +24,7 @@ class MiniAPISncf {
 	static function GetGares($search) {
 		$search=preg_replace("/'/","\\'",$search);
 		$search = urlencode($search);
-		$urlToCall = "https://ressources.data.sncf.com/api/explore/v2.1/catalog/datasets/referentiel-gares-voyageurs/records?select=gare_alias_libelle_noncontraint%2C%20code_gare%2Cuic_code&where=suggest(gare_alias_libelle_noncontraint,'$search')&group_by=code_gare%2Calias_libelle_noncontraint%2C%20uic_code&order_by=alias_libelle_noncontraint&limit=99";
+		$urlToCall = "https://ressources.data.sncf.com/api/explore/v2.1/catalog/datasets/liste-des-gares/records?select=libelle%2Ccode_uic&where=suggest(libelle,'$search')&group_by=code_uic%2Clibelle&order_by=libelle&limit=99";		
 		
 		$ch = curl_init( $urlToCall );
 		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
@@ -45,13 +44,11 @@ class MiniAPISncf {
 		$tab=json_decode($result,true,10,JSON_INVALID_UTF8_SUBSTITUTE);
 		$tab = $tab['results'];
 		
-		$lastCodeGare='';
 		$tGares=array();
 		$numGares=0;
 		foreach ($tab as $result) {
-				$lastCodeGare=$result['code_gare'];
-				$tGares[$numGares]['uic_code'][0] = ltrim($result['uic_code'],'0');
-				$tGares[$numGares]['name'] = $result['alias_libelle_noncontraint'];
+				$tGares[$numGares]['uic_code'][0] = ltrim($result['code_uic'],'0');
+				$tGares[$numGares]['name'] = $result['libelle'];
 				$numGares++;
 		}
 		return $tGares;
