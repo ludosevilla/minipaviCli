@@ -37,6 +37,7 @@ class DisplayPaginatedText {
 		private $vdtStart;			// Videotex à afficher avant tout (masque), qui ne sera affiché qu'une fois au départ
 		private $vdtClearPage;		// Videotex popur effacer le contenu d'une page sans effacer le masque, affiché à chaque chargement de page
 		private $textFilename;		// Fichier ou se trouve le texte
+		private $isFile;			// Indique si $textFilename est un nom de fichier ou un tableau contenant le texte
 		private $lTitle;			// Numéro de ligne pour positionner le titre (-24)
 		private $cTitle;			// Numéro de colonne pour positionner le titre (1-40)
 		private $vdtPreTitle;		// Videotex éventuel à afficher avant le titre
@@ -70,10 +71,11 @@ class DisplayPaginatedText {
 	// Gère l'affichage multi-page.
 	*************************************************/
 	
-	function __construct($vdtStart,$vdtClearPage,$textFilename,$lTitle,$cTitle,$vdtPreTitle,$lCounter,$cCounter,$vdtPreCounter,$lText,$cText,$maxLengthText,$normalColor,$specialColor,$vdtPreText,$vdtNone,$vdtSuite,$vdtRetour,$vdtSuiteRetour,$vdtErrNoPrev,$vdtErrNoNext,$lines) {
+	function __construct($vdtStart,$vdtClearPage,$textFilename,$lTitle,$cTitle,$vdtPreTitle,$lCounter,$cCounter,$vdtPreCounter,$lText,$cText,$maxLengthText,$normalColor,$specialColor,$vdtPreText,$vdtNone,$vdtSuite,$vdtRetour,$vdtSuiteRetour,$vdtErrNoPrev,$vdtErrNoNext,$lines,$isFile=true) {
 		$this->vdtStart = $vdtStart;			
 		$this->vdtClearPage= $vdtClearPage;		
 		$this->textFilename=$textFilename;		
+		$this->isFile=$isFile;	
 		$this->lTitle=$lTitle;					
 		$this->cTitle=$cTitle;					
 		$this->vdtPreTitle = $vdtPreTitle;		
@@ -112,7 +114,7 @@ class DisplayPaginatedText {
 	// vdt: code videotex à renvoyer à l'utilisateur
 	**************************************************/
 	function process($fctn,&$vdt) {
-		if ($this->step == 0) {
+		if ($this->step == 0  || $fctn=='') {
 			// Affiche le masque
 			$vdt= "\x14".$this->vdtStart;
 			$this->step = 1;
@@ -122,8 +124,9 @@ class DisplayPaginatedText {
 			else $vdt= "\x14";
 		}
 		
+
+		$tLines=$this->getArticle($this->textFilename,$this->isFile,$this->maxLengthText,$title);	
 		
-		$tLines=$this->getArticle($this->textFilename,$this->maxLengthText,$title);	
 		$numPages = ceil(count($tLines)/$this->lines);
 		$cLines = count($tLines);
 		
@@ -134,7 +137,7 @@ class DisplayPaginatedText {
 					$vdt.= $this->vdtClearPage;
 					break;
 				} else { 
-					$vdt.= "\x1F@A".$this->vdtErrNoNext."\n";
+					$vdt.= "\x1F@A".$this->vdtErrNoNext."\x18\n";
 					return true;
 				}
 			case 'RETOUR':
@@ -143,7 +146,7 @@ class DisplayPaginatedText {
 					$vdt.= $this->vdtClearPage;
 					break;
 				} else {
-					$vdt.= "\x1F@A".$this->vdtErrNoPrev."\n";
+					$vdt.= "\x1F@A".$this->vdtErrNoPrev."\x18\n";
 					return true;
 				}
 			case 'REPETITION':
@@ -152,7 +155,6 @@ class DisplayPaginatedText {
 			case '':
 				$vdt.= "\x1F".chr(64+$this->lTitle).chr(64+$this->cTitle).$this->vdtPreTitle.$this->toG2($title);
 		}
-		
 
 		$start = $this->displayedPage*$this->lines;
 		$stop = $start + $this->lines;
@@ -160,7 +162,7 @@ class DisplayPaginatedText {
 		for ($j=0,$i=$start;$i<$stop;$i++,$j++) {
 			if ($i>=$cLines)
 				break;
-				
+			$vdt.= "\x1F@A\x18";				
 			$vdt.="\x1F".chr(64+$this->lText+$j).chr(64+$this->cText);
 			if (substr($tLines[$i],0,1)=='#') {	// si la ligne commence par "#" on ecrit en couleur spéciale
 				$line = substr($tLines[$i],1);
@@ -168,17 +170,17 @@ class DisplayPaginatedText {
 			} else if ($tLines[$i]=='') {
 				$line='';
 				$color = $this->normalColor;
-			} else 
+			} else {
+				$color = $this->normalColor;
 				$line = $tLines[$i];
-			$vdt.=$color.$this->vdtPreText.$this->toG2($line);
+			}
+			$vdt.=$color.$this->vdtPreText.$this->toG2(mb_substr($line,0,$this->maxLengthText));
 		}
-		
 		
 		$vdt.= "\x1F".chr(64+$this->lCounter).chr(64+$this->cCounter).$this->vdtPreCounter;
 		$vdt.= ($this->displayedPage+1).'/'.$numPages;
 		
 		$vdt.= "\x1F".chr(64+$this->lCounter).chr(64+$this->cCounter).$this->vdtPreCounter;
-		
 		
 		if ($this->displayedPage+1<$numPages && $this->displayedPage>0) 
 			$vdt.=$this->vdtSuiteRetour;
@@ -192,12 +194,14 @@ class DisplayPaginatedText {
 	}
 
 
-	private function getArticle($filename,$lineLength,&$title) {
-		$txt = file($filename);
+	private function getArticle($filename,$isFile,$lineLength,&$title) {
+		if ($isFile)
+			$txt = file($filename);
+		else $txt =$filename;
 		$tTxt = array();
 		$title='';
 		foreach($txt as $k=>$line) {
-			$line = wordwrap(trim($line),$lineLength,"\n");
+			$line = wordwrap(trim($line),$lineLength,"\n",true);
 			$tLines=explode("\n",$line);
 			$tTxt = array_merge($tTxt,$tLines);
 		}

@@ -38,7 +38,7 @@ class DisplayList {
 		
 		private $lines;				// Nombre de lignes par page
 		private $spaceLines;		// Nombre de lignes vide entre deux choix
-
+		private $linesPerItem;		// Nombre de ligne par elements
 		private $step;				// Usage interne : Etape (initialisation, etc)
 		private $displayedPage;		// Usage interne : Page à afficher
 
@@ -47,7 +47,7 @@ class DisplayList {
 	// Gère l'affichage multi-page.
 	*************************************************/
 	
-	function __construct($vdtStart,$vdtClearPage,$list,$lCounter,$cCounter,$vdtPreCounter,$vdtItemNum,$lText,$cText,$vdtPreText,$vdtNone,$vdtSuite,$vdtRetour,$vdtSuiteRetour,$vdtErrNoPrev,$vdtErrNoNext,$vdtErrChoice,$lines,$spaceLines) {
+	function __construct($vdtStart,$vdtClearPage,$list,$lCounter,$cCounter,$vdtPreCounter,$vdtItemNum,$lText,$cText,$vdtPreText,$vdtNone,$vdtSuite,$vdtRetour,$vdtSuiteRetour,$vdtErrNoPrev,$vdtErrNoNext,$vdtErrChoice,$lines,$spaceLines,$linesPerItem=1) {
 		$this->vdtStart = $vdtStart;			
 		$this->vdtClearPage= $vdtClearPage;		
 		$this->list=$list;		
@@ -70,7 +70,8 @@ class DisplayList {
 		$this->vdtErrNoNext = $vdtErrNoNext;
 		$this->vdtErrChoice = $vdtErrChoice;
 		
-		$this->lines = $lines;				
+		$this->lines = $lines;	
+		$this->linesPerItem	 = $linesPerItem;
 		$this->spaceLines = $spaceLines;				
 		
 		$this->step = 0;					
@@ -88,21 +89,17 @@ class DisplayList {
 	**************************************************/
 	function process($fctn,$choice,&$vdt) {
 	
-		$cLines = count($this->list);
+		$cItems = count($this->list);
 		
-		
-		
-		if ($this->step == 0) {
+		if ($this->step == 0 || $fctn=='') {
 			// Affiche le masque
 			$vdt= "\x14".$this->vdtStart;
 			$this->step = 1;
 		} else {
-			if ($fctn!='' && $fctn != 'SUITE' && $fctn != 'RETOUR' && $fctn != 'REPETITION' && $fctn != 'ENVOI')
-				return false;
 			$vdt= "\x14";
-			if ($fctn == 'ENVOI') {
+			if ($fctn!='' && $fctn != 'SUITE' && $fctn != 'RETOUR' && $fctn != 'REPETITION') {
 				$choice = (int)$choice;
-				if ($choice <=0 || $choice > $cLines) {
+				if ($choice <=0 || $choice > $cItems) {
 					// Choix incorrect
 					$vdt.= "\x1F@A".$this->vdtErrChoice."\n";
 					return -1;
@@ -112,8 +109,8 @@ class DisplayList {
 			}
 		}
 
-		$numPages = ceil($cLines/$this->lines);
-		
+		$vdt.= "\x1F@A\x18\n";
+		$numPages = ceil($cItems/$this->lines);
 		
 		switch ($fctn) {
 			case 'SUITE':
@@ -122,7 +119,7 @@ class DisplayList {
 					$vdt.= $this->vdtClearPage;
 					break;
 				} else { 
-					$vdt.= "\x1F@A".$this->vdtErrNoNext."\n";
+					$vdt.= "\x1F@A".$this->vdtErrNoNext."\x18\n";
 					return -1;
 				}
 			case 'RETOUR':
@@ -131,7 +128,7 @@ class DisplayList {
 					$vdt.= $this->vdtClearPage;
 					break;
 				} else {
-					$vdt.= "\x1F@A".$this->vdtErrNoPrev."\n";
+					$vdt.= "\x1F@A".$this->vdtErrNoPrev."\x18\n";
 					return -1;
 				}
 			case 'REPETITION':
@@ -139,19 +136,30 @@ class DisplayList {
 				break;
 		}
 		
-		$lengthMaxItem = '%'.strlen((string)$cLines).'d';
+		$lengthMaxItem = '%'.strlen((string)$cItems).'d';
+		
+		$lItemNum = strlen((string)$cItems);
 		
 		$start = $this->displayedPage*$this->lines;
 		$stop = $start + $this->lines;
-		for ($j=0,$i=$start,$offset=0;$i<$stop;$i++,$j++,$offset+=$this->spaceLines) {
-			if ($i>=$cLines)
+		for ($j=0,$i=$start,$offset=0;$i<$stop;$i++,$j++,$offset+=$this->spaceLines+($this->linesPerItem-1)) {
+			if ($i>=$cItems)
 				break;
 			
 			
 			
 			$itemNum = preg_replace("/#/", sprintf($lengthMaxItem,($i+1)) ,$this->vdtItemNum);
 			
-			$vdt.="\x1F".chr(64+$this->lText+$j+$offset).chr(64+$this->cText).$itemNum.' '.$this->vdtPreText.$this->toG2($this->list[$i]);
+		
+			if ($this->linesPerItem <2)
+				$vdt.="\x1F".chr(64+$this->lText+$j+$offset).chr(64+$this->cText).$itemNum.' '.$this->vdtPreText.$this->toG2($this->list[$i]);
+			else {
+				$vdt.="\x1F".chr(64+$this->lText+$j+$offset).chr(64+$this->cText).$itemNum.' '.$this->vdtPreText.$this->toG2($this->list[$i][0]);
+				
+				for ($ln=1;$ln<$this->linesPerItem;$ln++) {
+					$vdt.="\x1F".chr(64+$this->lText+$j+$ln+$offset).chr(64+$this->cText+$lItemNum+1).$this->vdtPreText.$this->toG2($this->list[$i][$ln]);
+				}
+			}
 		}
 		
 		
@@ -159,7 +167,6 @@ class DisplayList {
 		$vdt.= ($this->displayedPage+1).'/'.$numPages;
 		
 		$vdt.= "\x1F".chr(64+$this->lCounter).chr(64+$this->cCounter).$this->vdtPreCounter;
-		
 		
 		if ($this->displayedPage+1<$numPages && $this->displayedPage>0) 
 			$vdt.=$this->vdtSuiteRetour;
