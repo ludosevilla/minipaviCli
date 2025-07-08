@@ -2,7 +2,7 @@
 /**
  * @file MiniPaviCli.php
  * @author Jean-arthur SILVE <contact@minipavi.fr>
- * @version 1.1 Novembre 2023 - Août 2024
+ * @version 1.1 Novembre 2023 - Juillet 2025
  *
  * Communication avec la passerelle MiniPavi
  *
@@ -15,12 +15,13 @@
  * 17/04/2024 : Modifications concernant createBackgroundCallCmd: ajout de la simulation utilisateur 
  * 19/08/2024 : Ajout fonctions "WebMedia"
  * 11/10/2024 : Ajout commande "createInputFormCmd"
+ * 08/07/2025 : Ajout de "webmedia" et du paramètre "ignoreWMState" à la fonction start()
  *
  */
  
 namespace MiniPavi;
  
-const VERSION = '1.0';
+const VERSION = '1.1';
 define('VDT_LEFT', "\x08");			// Déplacement curseur vers la gauche
 define('VDT_RIGHT', "\x09");		// Déplacement curseur vers la droite
 define('VDT_DOWN', "\x0A");			// Déplacement curseur vers le bas
@@ -90,6 +91,7 @@ class MiniPaviCli {
 	static public $remoteAddr='';	// IP de l'utilisateur ou "CALLFROM xxxx" (xxx = numéro tel) si accès par téléphone
 	static public $content=array();	// Contenu saisi
 	static public $fctn='';			// Touche de fonction utilisée (ou CNX ou FIN)
+	static public $webmedia=0;		// Lecteur webmedia actif/inactif (1/0)
 	static public $urlParams='';	// Paramètres fournis lors de l'appel à l'url du service
 	static public $context='';		// 65000 caractres libres d'utilisation et rappellés à chaque accès.
 	static public $typeSocket;		// Type de connexion ('websocket' ou 'other')
@@ -109,9 +111,10 @@ class MiniPaviCli {
 	
 	/*************************************************
 	// Reçoit les données envoyées depuis MiniPavi
+	// ignoreWMState: si "true", les appels depuis MiniPavi indiquant l'état de lecteur Webmedia sont ignorés
 	**************************************************/
 	
-	static function start() {
+	static function start($ignoreWMState=true) {
 		if (strpos(@$_SERVER['HTTP_USER_AGENT'],'MiniPAVI') === false) {
 			$currentUrl = (empty($_SERVER['HTTPS']) ? 'http' : 'https') . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 			$currentUrl = urlencode($currentUrl);
@@ -132,12 +135,16 @@ class MiniPaviCli {
 			self::$content = @$requestData->PAVI->content;
 			self::$context = @$requestData->PAVI->context;
 			self::$fctn = @$requestData->PAVI->fctn;
+			self::$webmedia = @$requestData->PAVI->webmedia;
 			if (isset($requestData->URLPARAMS))
 				self::$urlParams = @$requestData->URLPARAMS;
 
 		}  catch (Exception $e) {
 			throw new Exception('Erreur json decode '.$e->getMessage());
 		}
+		
+		if ($ignoreWMState && strpos(self::$fctn,'BGCALL-WM-')===0)
+			exit;
 	}
 	
 	/*************************************************
