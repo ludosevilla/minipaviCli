@@ -1,8 +1,8 @@
 ****************************************************  
-****           MINIPAVI Client 1.0              ****  
-****         Novembre 2023 - Août 2024           ****  
+****           MINIPAVI Client 1.1              ****  
+****       Novembre 2023 - Juillet 2025         ****  
 ****            Jean-arthur Silve               ****  
-****     Infos : http://www.minipavi.fr         ****  
+****      Infos : http://www.minipavi.fr        ****  
 ****                                            ****  
 ****    L'ensemble des fichiers peuvent être    ****  
 ****         modifiés, distribués etc !         ****  
