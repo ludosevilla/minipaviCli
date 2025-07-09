@@ -15,7 +15,7 @@
  * 17/04/2024 : Modifications concernant createBackgroundCallCmd: ajout de la simulation utilisateur 
  * 19/08/2024 : Ajout fonctions "WebMedia"
  * 11/10/2024 : Ajout commande "createInputFormCmd"
- * 08/07/2025 : Ajout de "webmedia" et du paramètre "ignoreWMState" à la fonction start()
+ * 08/07/2025 : Ajout de "webmedia" et du paramètre "ignoreWMState" à la fonction start() et createSetParam
  *
  */
  
@@ -524,6 +524,21 @@ class MiniPaviCli {
 		$cmd['COMMAND']['name']='duplicateStream';
 		$cmd['COMMAND']['param']['uniqueid'] = $uniqueid;
 		$cmd['COMMAND']['param']['key'] = $key;
+		return $cmd;
+	}
+
+
+	/*************************************************
+	// Modification de paramètres de MiniPavi
+	// paramName: nom du paramètre à modifier
+	// params: paramètres
+	**************************************************/
+
+	static function createSetParam($paramName,$params=array()) {
+		$cmd=array();
+		$cmd['COMMAND']['name']='setParam';
+		$cmd['COMMAND']['param']['paramName'] = $paramName;
+		$cmd['COMMAND']['param']['params'] = $params;
 		return $cmd;
 	}
 
