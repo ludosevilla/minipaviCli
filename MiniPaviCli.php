@@ -636,6 +636,16 @@ class MiniPaviCli {
 	}
 
 	/*************************************************
+	// Génère code videotex de demande d'affichage sur WebMedia de la video Dailymotion $dmId
+	**************************************************/	
+	
+	static function webMediaDM($dmId) {
+		$vdt = self::setPos(1,0);
+		$vdt.= "\x1B@\x14#DDM:$dmId\x14#F".VDT_CLRLN."\n";
+		return $vdt;
+	}
+
+	/*************************************************
 	// Génère code videotex de demande d'affichage sur WebMedia d'une video accessible à l'URL $url
 	**************************************************/	
 	
