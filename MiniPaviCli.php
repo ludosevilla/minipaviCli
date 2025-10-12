@@ -16,6 +16,7 @@
  * 19/08/2024 : Ajout fonctions "WebMedia"
  * 11/10/2024 : Ajout commande "createInputFormCmd"
  * 08/07/2025 : Ajout de "webmedia" et du paramètre "ignoreWMState" à la fonction start() et createSetParam
+ * 12/10/2025 : Ajout de la possibilité de champs "mot de passe" dans la saisie de formulaires (commande createInputFormCmd)
  *
  */
  
@@ -309,7 +310,7 @@ class MiniPaviCli {
 	// preFill: tableau du texte de pré-remplissage de chaque ligne
 	**************************************************/
 
-	static function createInputFormCmd($posX=array(1),$posY=array(1),$length=array(10),$validWith=MSK_ENVOI,$cursor=true,$spaceChar='.',$preFill=array()) {
+	static function createInputFormCmd($posX=array(1),$posY=array(1),$length=array(10),$validWith=MSK_ENVOI,$cursor=true,$spaceChar='.',$preFill=array(),$char=array()) {
 		
 		if (is_array($posX) && is_array($posY) && is_array($length)) {
 			$cX = count($posX);
@@ -351,6 +352,7 @@ class MiniPaviCli {
 		$cmd['COMMAND']['param']['y']=$posY;
 		$cmd['COMMAND']['param']['l']=$length;
 		$cmd['COMMAND']['param']['spacechar']=$spaceChar;
+		$cmd['COMMAND']['param']['char']=$char;
 		$cmd['COMMAND']['param']['prefill']=$preFill;
 		if ($cursor)
 			$cmd['COMMAND']['param']['cursor']='on';
@@ -696,7 +698,7 @@ class MiniPaviCli {
 		
 		$tabAcc=array('é','è','à','ç','ê','É','È','À','Ç','Ê',
 		'β','ß','œ','Œ','ü','û','ú','ù','ö','ô','ó','ò','ï','î','í','ì','ë','ä',
-		'â','á','£','°','±','←','↑','→','↓','¼','½','¾','Â','Î','ō','á','’',' ','ň','ć','ř','ý','š','í','ą');
+		'â','á','£','°','±','←','↑','→','↓','¼','½','¾','Â','Î','ō','á','’',' ','ň','ć','ř','ý','š','í','ą','ā');
 		
 		$tabG2=array(VDT_G2."\x42e",
 		VDT_G2."\x41e",
@@ -739,7 +741,7 @@ class MiniPaviCli {
 		VDT_G2."\x3D",		
 		VDT_G2."\x3E",
 		VDT_G2."\x43A",
-		'I','o','a',"'",' ','n','c','r','y','s','i','a'
+		'I','o','a',"'",' ','n','c','r','y','s','i','a','a'
 		);
 		
 		return str_replace($tabAcc, $tabG2, $str);	
