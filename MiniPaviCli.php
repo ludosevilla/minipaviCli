@@ -2,7 +2,7 @@
 /**
  * @file MiniPaviCli.php
  * @author Jean-arthur SILVE <contact@minipavi.fr>
- * @version 1.1 Novembre 2023 - Juillet 2025
+ * @version 1.1 Novembre 2023 - Décembre 2025
  *
  * Communication avec la passerelle MiniPavi
  *
@@ -17,6 +17,7 @@
  * 11/10/2024 : Ajout commande "createInputFormCmd"
  * 08/07/2025 : Ajout de "webmedia" et du paramètre "ignoreWMState" à la fonction start() et createSetParam
  * 12/10/2025 : Ajout de la possibilité de champs "mot de passe" dans la saisie de formulaires (commande createInputFormCmd)
+ * 23/12/2025 : Ajout commandes "createGetScreen" et "createGetScreenList"
  *
  */
  
@@ -91,6 +92,7 @@ class MiniPaviCli {
 	static public $uniqueId='';		// Identifiant unique de la connexion
 	static public $remoteAddr='';	// IP de l'utilisateur ou "CALLFROM xxxx" (xxx = numéro tel) si accès par téléphone
 	static public $content=array();	// Contenu saisi
+	static public $datas='';		// Données diverses facultatives envoyées par la passerelle
 	static public $fctn='';			// Touche de fonction utilisée (ou CNX ou FIN)
 	static public $webmedia=0;		// Lecteur webmedia actif/inactif (1/0)
 	static public $urlParams='';	// Paramètres fournis lors de l'appel à l'url du service
@@ -124,16 +126,16 @@ class MiniPaviCli {
 			exit;
 		}
 		$rawPostData = file_get_contents("php://input");
-		
+
 		
 		try {
-			$requestData = json_decode($rawPostData,false,5,JSON_THROW_ON_ERROR);
-				
+			$requestData = json_decode($rawPostData,false,10,JSON_THROW_ON_ERROR);
 			self::$uniqueId = @$requestData->PAVI->uniqueId;
 			self::$remoteAddr = @$requestData->PAVI->remoteAddr;
 			self::$typeSocket = @$requestData->PAVI->typesocket;
 			self::$versionMinitel = @$requestData->PAVI->versionminitel;
 			self::$content = @$requestData->PAVI->content;
+			self::$datas = @$requestData->PAVI->datas;
 			self::$context = @$requestData->PAVI->context;
 			self::$fctn = @$requestData->PAVI->fctn;
 			self::$webmedia = @$requestData->PAVI->webmedia;
@@ -541,6 +543,34 @@ class MiniPaviCli {
 		$cmd['COMMAND']['name']='setParam';
 		$cmd['COMMAND']['param']['paramName'] = $paramName;
 		$cmd['COMMAND']['param']['params'] = $params;
+		return $cmd;
+	}
+
+	/*************************************************
+	// Demande de récupération d'un screenshot
+	// seq: identifiant du scrrenshot (pour l'utilisateur en cours)
+	// color: image en couleur (true) ou noir & blanc (false)
+	// minitel: capture avec image de minitel (1)
+	**************************************************/
+
+	static function createGetScreen($seq,$color=true,$minitel=0) {
+		$cmd=array();
+		$cmd['COMMAND']['name']='getScreen';
+		$cmd['COMMAND']['param']['seq'] = $seq;
+		if ($color)
+			$cmd['COMMAND']['param']['color'] = 1;
+		else $cmd['COMMAND']['param']['color'] = 0;
+		$cmd['COMMAND']['param']['minitel'] = $minitel;
+		return $cmd;
+	}
+
+	/*************************************************
+	// Demande la liste des screenshots (pour l'utilisateur en cours)
+	**************************************************/
+
+	static function createGetScreenList() {
+		$cmd=array();
+		$cmd['COMMAND']['name']='getScreenList';
 		return $cmd;
 	}
 
