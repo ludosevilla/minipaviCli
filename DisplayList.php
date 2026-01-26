@@ -101,7 +101,7 @@ class DisplayList {
 				$choice = (int)$choice;
 				if ($choice <=0 || $choice > $cItems) {
 					// Choix incorrect
-					$vdt.= "\x1F@A".$this->vdtErrChoice."\n";
+					$vdt.= "\x1F@A".$this->vdtErrChoice."\x18\n";
 					return -1;
 				}
 				// Le choix est correct
@@ -163,10 +163,14 @@ class DisplayList {
 		}
 		
 		
-		$vdt.= "\x1F".chr(64+$this->lCounter).chr(64+$this->cCounter).$this->vdtPreCounter;
-		$vdt.= ($this->displayedPage+1).'/'.$numPages;
+		if ($numPages>0) {
+			
+			$lengthMaxCounter = '%'.strlen((string)$numPages).'d';
+			
+			$vdt.= "\x1F".chr(64+$this->lCounter).chr(64+$this->cCounter).$this->vdtPreCounter;
+			$vdt.= sprintf($lengthMaxCounter,($this->displayedPage+1)).'/'.$numPages;
+		}
 		
-		$vdt.= "\x1F".chr(64+$this->lCounter).chr(64+$this->cCounter).$this->vdtPreCounter;
 		
 		if ($this->displayedPage+1<$numPages && $this->displayedPage>0) 
 			$vdt.=$this->vdtSuiteRetour;
@@ -185,7 +189,7 @@ class DisplayList {
 		
 		$tabAcc=array('é','è','à','ç','ê','É','È','À','Ç','Ê',
 		'β','ß','œ','Œ','ü','û','ú','ù','ö','ô','ó','ò','ï','î','í','ì','ë','ä',
-		'â','á','£','°','±','←','↑','→','↓','¼','½','¾','Â','Î','ō','á','’',' ','ň','ć','ř','ý','š','í','ą');
+		'â','á','£','°','±','←','↑','→','↓','¼','½','¾','Â','Î','ō','á','’',' ','ň','ć','ř','ý','š','í','ą','ā');
 		
 		$tabG2=array("\x19"."\x42e",
 		"\x19"."\x41e",
@@ -228,7 +232,7 @@ class DisplayList {
 		"\x19"."\x3D",		
 		"\x19"."\x3E",
 		"\x19"."\x43A",
-		'I','o','a',"'",' ','n','c','r','y','s','i','a'
+		'I','o','a',"'",' ','n','c','r','y','s','i','a','a'
 		);
 		
 		foreach($tabAcc as $k=>$c) {
