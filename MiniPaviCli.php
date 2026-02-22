@@ -83,6 +83,7 @@ define('MSK_GUIDE', 16);
 define('MSK_CORRECTION', 32);
 define('MSK_SUITE', 64);
 define('MSK_ENVOI', 128);
+define('MSK_AUTOSEND', 256);
 
 define('DEFAULT_MINIPAVI_GW', 'wss://go.minipavi.fr:8181');		// Passerelle MiniPavi à utiliser si l'appel au script n'est pas effectué par une passerelle
 
